@@ -68,7 +68,7 @@ namespace InternConsoleApp
                     Console.WriteLine($"Hello, {name},\nlet's go to the nursery home.");
                     break;
                 default:
-                    Console.WriteLine($"Hello, {name},\nlet's go.. no where, I guess.\nI wasn't told what to tell you if you were this age.");
+                    Console.WriteLine($"Hello, {name},\nlet's go... no where, I guess.\nI wasn't told what to tell you if you were this age.");
                     break;
             }
 
