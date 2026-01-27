@@ -40,8 +40,9 @@ namespace InternConsoleApp
                 {
                     break;
                 }
-                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols"); 
+                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)"); 
             }                                   //Did you mean )" instead of ")? It cuts off the console command output prematurely.
+                                                // I meant )") actually. I needed a closing bracket both before ant after the close quote.
 
             //Boolean for Age-dependent Messgae
 
@@ -52,28 +53,33 @@ namespace InternConsoleApp
             // >75: "Hello, {name},\nlet's go to the nursery home."
 
             Console.WriteLine("\n");
-            if (age > 18)
+            switch (age)
             {
-                Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
+                case int n when (n >= 1 && n <= 3):
+                    Console.WriteLine($"Hello, {name},\nlet's go to the nursery.");
+                    break;
+                case int n when (n >= 4 && n <= 12):
+                    Console.WriteLine($"Hello, {name},\nlet's go to Primary School.");
+                    break;
+                case int n when (n >= 13 && n <= 17):
+                    Console.WriteLine($"Hello, {name},\nlet's go to High School.");
+                    break;
+                case int n when (n > 75):
+                    Console.WriteLine($"Hello, {name},\nlet's go to the nursery home.");
+                    break;
+                default:
+                    Console.WriteLine($"Hello, {name},\nlet's go.. no where, I guess.\nI wasn't told what to tell you if you were this age.");
+                    break;
             }
-           
-            else if (age == 18)
-            {
-                Console.WriteLine($"Hello, {name},\nlet's have fun this year.");
 
-            }
-
-            else if (age < 18)
-            {
-                Console.WriteLine($"Hello, {name},\nlet's go to class.");
-            }
-
-
-            //Console.WriteLine();
+                    //Console.WriteLine(); 
+                    //Fixed
+            Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
             return; // Added return statement to explicitly indicate the end of Main method
+                    // still needs two keystrokes on this laptop to exit. 
         }
     }
 }
