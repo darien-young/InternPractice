@@ -40,10 +40,17 @@ namespace InternConsoleApp
                 {
                     break;
                 }
-                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols");
-            }
+                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols"); 
+            }                                   //Did you mean )" instead of ")? It cuts off the console command output prematurely.
 
             //Boolean for Age-dependent Messgae
+
+            // Let's have more age ranges added:
+            // 1 - 3: "Hello, {name},\nlet's go to the nursery."
+            // 4 - 12: "Hello, {name},\nlet's go to primary school."
+            // 13 - 17: "Hello, {name},\nlet's go to high school."
+            // >75: "Hello, {name},\nlet's go to the nursery home."
+
             Console.WriteLine("\n");
             if (age > 18)
             {
@@ -62,10 +69,11 @@ namespace InternConsoleApp
             }
 
 
-            Console.WriteLine();
+            //Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
+            return; // Added return statement to explicitly indicate the end of Main method
         }
     }
 }
