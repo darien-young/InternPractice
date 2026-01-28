@@ -75,6 +75,12 @@ namespace InternConsoleApp
             }
 
             //Readded the separate switch for age18-based conditions. For some reason I assumed it wouldn't be that simple.
+
+            //Darien Comment:
+            //It's technically not necessary to have a separate switch statement here.
+            //The current logic works, but it generates two messages for ages that fall into the first four categories from the first switch.
+            //Try having it so that each age only generates one message total.
+
             Console.WriteLine();
             switch (age)
             {
@@ -91,12 +97,18 @@ namespace InternConsoleApp
 
             //Console.WriteLine(); 
             //Fixed
+
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
             return; // Added return statement to explicitly indicate the end of Main method
                     // still needs two keystrokes on this laptop to exit. 
+
+            //Darien Comment: 
+            // This multiple keystroke issue is due to how the console handles input buffering.
+            // *Try commenting out the readkey and the writeline without any string values and see if it still happens.
+            // Once we're both satisfied with the code, we can consider this task complete and go into phase 2 of this program.
         }
     }
 }
