@@ -8,8 +8,9 @@ namespace InternConsoleApp
     {
         static void Main(string[] args)
         {
-            //This program already works. Your task is to change what happens after the input,
-            //and to ensure the correct datatypes are being used for the inputs.
+            // Phase 2:
+            // Instead of asking for an age, ask for the user's Birth Year and calculate the age based on the current year dynamically before output.
+
             string name = "";
             while (true)
             {
@@ -41,20 +42,10 @@ namespace InternConsoleApp
                     break;
                 }
                 Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)"); 
-            }                                   //Did you mean )" instead of ")? It cuts off the console command output prematurely.
-                                                // I meant )") actually. I needed a closing bracket both before ant after the close quote.
+            }                                   
 
             //Boolean for Age-dependent Message
 
-            // Let's have more age ranges added:
-            // 1 - 3: "Hello, {name},\nlet's go to the nursery."
-            // 4 - 12: "Hello, {name},\nlet's go to primary school."
-            // 13 - 17: "Hello, {name},\nlet's go to high school."
-            // >75: "Hello, {name},\nlet's go to the nursery home."
-            //max: readded the age18-based conditions as extra lines of output to the applicable cases
-            // -- while adding new cases for those unapplicable ages.
-            // max: took the age18-based conditions out of the switch and made them their own switch statement.
-            //max: readded the age18-based conditions into the main switch statement to avoid multiple outputs.
             Console.WriteLine();
             switch (age)
             {
@@ -78,29 +69,12 @@ namespace InternConsoleApp
                     break;
             }
 
-            //Readded the separate switch for age18-based conditions. For some reason I assumed it wouldn't be that simple.
-
-            //Darien Comment:
-            //It's technically not necessary to have a separate switch statement here.
-            //The current logic works, but it generates two messages for ages that fall into the first four categories from the first switch.
-            //Try having it so that each age only generates one message total.
-            // Ok I had thought you wanted both messages. in that case i'll just add the >18 and ==18 into the next switch, and abandon the <18
-        
-
-            //Console.WriteLine(); 
-            //Fixed
-
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
             return; // Added return statement to explicitly indicate the end of Main method
                     // still needs two keystrokes on this laptop to exit. 
-
-            //Darien Comment: 
-            // This multiple keystroke issue is due to how the console handles input buffering.
-            // *Try commenting out the readkey and the writeline without any string values and see if it still happens.
-            // Once we're both satisfied with the code, we can consider this task complete and go into phase 2 of this program.
         }
     }
 }
