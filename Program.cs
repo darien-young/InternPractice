@@ -66,11 +66,14 @@ namespace InternConsoleApp
                 case int n when (n >= 13 && n <= 17):
                     Console.WriteLine($"Hello, {name},\nlet's go to High School.");
                     break;
+                case int n when (n == 18):
+                    Console.WriteLine($"Hello, {name},\nlet's have fun this year.");
+                    break;
+                case int n when (n > 18 && n <= 75):
+                    Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
+                    break;
                 case int n when (n > 75):
                     Console.WriteLine($"Hello, {name},\nlet's go to the nursery home.");
-                    break;
-                default:
-                    Console.WriteLine();
                     break;
             }
 
@@ -80,20 +83,8 @@ namespace InternConsoleApp
             //It's technically not necessary to have a separate switch statement here.
             //The current logic works, but it generates two messages for ages that fall into the first four categories from the first switch.
             //Try having it so that each age only generates one message total.
-
-            Console.WriteLine();
-            switch (age)
-            {
-                case int n when (n > 18):
-                    Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
-                    break;
-                case int n when (n < 18):
-                    Console.WriteLine($"Hello, {name},\nlet's go to class."); 
-                    break;
-                default:
-                    Console.WriteLine($"Hello, {name},\nlet's go to High School.");
-                    break;
-            }
+            // Ok I had thought you wanted both messages. in that case i'll just add the >18 and ==18 into the next switch, and abandon the <18
+        
 
             //Console.WriteLine(); 
             //Fixed
