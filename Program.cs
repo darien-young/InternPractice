@@ -29,15 +29,24 @@ namespace InternConsoleApp
             }
 
             //Setting age integer to then be updated by string parsing
+            //Changing the ageinput to Birth Year input
             int age = 0;
+            int BirthYear;
             while (true)
             {
                 // Ask for user's age
-                Console.Write("Enter your age: ");
-                string ageInput = Console.ReadLine();
+                Console.Write("Enter your Birth Year: ");
+                String BirthYearInput = Console.ReadLine();
+
+                //Parsing the BirthYear String to Int type
+                BirthYear = int.Parse(BirthYearInput);
+                DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+                //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
+                age = currentDate.Year - BirthYear;
+                
 
                 //checking for only numeric inputs
-                if (int.TryParse(ageInput, out age) && age >= 0)
+                if (age >= 0)
                 {
                     break;
                 }
