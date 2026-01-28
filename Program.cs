@@ -54,6 +54,7 @@ namespace InternConsoleApp
             //max: readded the age18-based conditions as extra lines of output to the applicable cases
             // -- while adding new cases for those unapplicable ages.
             // max: took the age18-based conditions out of the switch and made them their own switch statement.
+            //max: readded the age18-based conditions into the main switch statement to avoid multiple outputs.
             Console.WriteLine();
             switch (age)
             {
