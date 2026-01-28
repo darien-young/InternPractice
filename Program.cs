@@ -6,6 +6,15 @@ namespace InternConsoleApp
 {
     class Program
     {
+        enum AgeCategory
+        {
+            Infant, //0-2
+            Child, //3-12  
+            Teenager,//13-17
+            YoungAdult,//18-24
+            Adult,//25-64
+            Senior//65+
+        }
         static void Main(string[] args)
         {
             // Phase 2:
@@ -38,6 +47,7 @@ namespace InternConsoleApp
             //Changing the ageinput to Birth Year input
             int age = 0;
             int BirthYear;
+            var currentYear = DateTime.Now.Year;
             while (true)
             {
                 // Ask for user's age
@@ -47,40 +57,63 @@ namespace InternConsoleApp
                 //Parsing the BirthYear String to Int type
                 BirthYear = int.Parse(BirthYearInput);
                 DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+
+                if (!int.TryParse(BirthYearInput, out BirthYear))
+                {
+                    Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
+                    continue;
+                }
+
+                if (BirthYear > currentYear)
+                {
+                    Console.WriteLine("Invalid Input. This year has not happened yet -_-");
+                    continue;
+                }
+
+                if (BirthYear < currentYear - 130)
+                {
+                    Console.WriteLine("Invalid Input. No one lives that long these days.");
+                    continue;
+                }
+
                 //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
                 age = currentDate.Year - BirthYear;
-                
+
 
                 //checking for only numeric inputs
                 if (age >= 0)
                 {
                     break;
                 }
-                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)"); 
-            }                                   
+                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
+            }
 
-            //Boolean for Age-dependent Message
+            // Fetching Age to Determine Age Category. Set in static block at the bottom
+            AgeCategory ageCategory = GetCategory(age);
+
+            //Boolean for AgeCategory-dependent Message
 
             Console.WriteLine();
-            switch (age)
+            switch (ageCategory)
             {
-                case int n when (n >= 1 && n <= 3):
-                    Console.WriteLine($"Hello, {name},\nlet's go to the nursery.");
+                case AgeCategory.Infant:
+                    Console.WriteLine($"Googoo, {name},\ngoo ga goo goo googooga.");
                     break;
-                case int n when (n >= 4 && n <= 12):
-                    Console.WriteLine($"Hello, {name},\nlet's go to Primary School.");
+                case AgeCategory.Child:
+                    Console.WriteLine($"Hi, {name},\nlet's go play outside.");
                     break;
-                case int n when (n >= 13 && n <= 17):
-                    Console.WriteLine($"Hello, {name},\nlet's go to High School.");
+                case AgeCategory.Teenager:
+                    Console.WriteLine($"Yo, {name},\nlet's go to high school.");
                     break;
-                case int n when (n == 18):
-                    Console.WriteLine($"Hello, {name},\nlet's have fun this year.");
+                case AgeCategory.YoungAdult:
+                    Console.WriteLine($"Hey, {name},\nlet's go out for a drink");
                     break;
-                case int n when (n > 18 && n <= 75):
-                    Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
+                case AgeCategory.Adult:
+                    Console.WriteLine($"Hello, {name},\nlet's go do our taxes.");
                     break;
-                case int n when (n > 75):
-                    Console.WriteLine($"Hello, {name},\nlet's go to the nursery home.");
+                case AgeCategory.Senior:
+                    Console.WriteLine($"Good day, {name},\nlet's go write our will!");
                     break;
             }
 
@@ -89,7 +122,18 @@ namespace InternConsoleApp
             Console.ReadKey();
 
             return; // Added return statement to explicitly indicate the end of Main method
-                    // still needs two keystrokes on this laptop to exit. 
+        }      // still needs two keystrokes on this laptop to exit. 
+
+            private static AgeCategory GetCategory(int age)
+            {
+                if (age >= 0 && age <= 2) return AgeCategory.Infant;
+                if (age >= 3 && age <= 12) return AgeCategory.Child;
+                if (age >= 13 && age <= 17) return AgeCategory.Teenager;
+                if (age >= 18 && age <= 24) return AgeCategory.YoungAdult;
+                if (age >= 25 && age <= 64) return AgeCategory.Adult;
+                if (age >= 65) return AgeCategory.Senior;
+                return AgeCategory.Adult; // Default case, should not reach here
+        }
+
         }
     }
-}
