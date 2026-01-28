@@ -11,6 +11,12 @@ namespace InternConsoleApp
             // Phase 2:
             // Instead of asking for an age, ask for the user's Birth Year and calculate the age based on the current year dynamically before output.
 
+            // Darien Comment: Good as is, with the only asterisk being when user inputs the current year as their birth year, the program doesn't enter the switch.
+
+            // Phase 3: Based on user's age, assign the user a category and print a different message for each category.
+            // The categories are as follows: Child, Teenager, Young Adult, Adult, Senior.
+            // For the purpose of initial development and testing, you can define the logic as you see fit.
+
             string name = "";
             while (true)
             {
