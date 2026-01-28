@@ -26,6 +26,15 @@ namespace InternConsoleApp
             // The categories are as follows: Child, Teenager, Young Adult, Adult, Senior.
             // For the purpose of initial development and testing, you can define the logic as you see fit.
 
+            // Darien Comment: Having a constructor and private class is good practice.
+
+            // Phase 3.1: Now, I'd like you to refine the system by using an array of strings to hold the categories.
+            // For each user input, determine the appropriate category index and use it to fetch the category from the array.
+            // Print a message that includes the user's name and their assigned category.
+            // For each input, the person's name should be saved into the array, and the program should loop until all categories have a name assigned.
+            // At any point, the end user should be able to see a snapshot of the current state of the array,
+            // and if the program is exited early, it will print out the current state of the array.
+
             string name = "";
             while (true)
             {
