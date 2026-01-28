@@ -53,35 +53,44 @@ namespace InternConsoleApp
             // >75: "Hello, {name},\nlet's go to the nursery home."
             //max: readded the age18-based conditions as extra lines of output to the applicable cases
             // -- while adding new cases for those unapplicable ages.
-            Console.WriteLine("\n");
+            // max: took the age18-based conditions out of the switch and made them their own switch statement.
+            Console.WriteLine();
             switch (age)
             {
                 case int n when (n >= 1 && n <= 3):
                     Console.WriteLine($"Hello, {name},\nlet's go to the nursery.");
-                    Console.WriteLine($"Hello, {name},\nlet's go to class.");
                     break;
                 case int n when (n >= 4 && n <= 12):
                     Console.WriteLine($"Hello, {name},\nlet's go to Primary School.");
-                    Console.WriteLine($"Hello, {name},\nlet's go to class.");
                     break;
                 case int n when (n >= 13 && n <= 17):
                     Console.WriteLine($"Hello, {name},\nlet's go to High School.");
-                    Console.WriteLine($"Hello, {name},\nlet's go to class.");
                     break;
                 case int n when (n > 75):
                     Console.WriteLine($"Hello, {name},\nlet's go to the nursery home.");
-                    Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
-                    break;
-                case int n when (n > 18):
-                    Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
                     break;
                 default:
-                    Console.WriteLine($"Hello, {name},\nlet's go.. no where, I guess.\nI wasn't told what to tell you if you were this age.");
+                    Console.WriteLine();
                     break;
             }
 
-                    //Console.WriteLine(); 
-                    //Fixed
+            //Readded the separate switch for age18-based conditions. For some reason I assumed it wouldn't be that simple.
+            Console.WriteLine();
+            switch (age)
+            {
+                case int n when (n > 18):
+                    Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
+                    break;
+                case int n when (n < 18):
+                    Console.WriteLine($"Hello, {name},\nlet's go to class."); 
+                    break;
+                default:
+                    Console.WriteLine($"Hello, {name},\nlet's go to High School.");
+                    break;
+            }
+
+            //Console.WriteLine(); 
+            //Fixed
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
