@@ -75,9 +75,8 @@ namespace InternConsoleApp
                 case int n when (n > 18):
                     Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
                     break;
-
-                case int n when (n == 18):
-                    Console.WriteLine($"Hello, {name},\nlet's have fun this year.");
+                default:
+                    Console.WriteLine($"Hello, {name},\nlet's go.. no where, I guess.\nI wasn't told what to tell you if you were this age.");
                     break;
             }
 
