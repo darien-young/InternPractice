@@ -1,8 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Text.Json.Nodes;
+using System.Xml.Linq;
 
 namespace InternConsoleApp
 {
@@ -19,32 +21,30 @@ namespace InternConsoleApp
         }
         static void Main(string[] args)
         {
-            // Phase 2:
-            // Instead of asking for an age, ask for the user's Birth Year and calculate the age based on the current year dynamically before output.
+           /* Phase 3.2 - Cleaner Logic Flow 
+             Separate Concerns into 3 functions:
 
-            // Darien Comment: Good as is, with the only asterisk being when user inputs the current year as their birth year, the program doesn't enter the switch.
+            PromptName()
+            PromptBirthYear()
+            PromptMenuChoice() - [return 1, 2, or 3]
 
-            // Phase 3: Based on user's age, assign the user a category and print a different message for each category.
-            // The categories are as follows: Child, Teenager, Young Adult, Adult, Senior.
-            // For the purpose of initial development and testing, you can define the logic as you see fit.
+            Rules:
+                -PromptMenuChoice() only accepts specific integers.
+                -PromptName() accepts names.
 
-            // Darien Comment: Having a constructor and private class is good practice.
+            Program Shows Menu:
+                -at the very start(optional)
+                - after each successful assignment(required)
+                - snapshot choice loops back to menu
 
-            // Phase 3.1: Now, I'd like you to refine the system by using an array of strings to hold the categories.
-            // For each user input, determine the appropriate category index and use it to fetch the category from the array.
-            // Print a message that includes the user's name and their assigned category.
-            // For each input, the person's name should be saved into the array, and the program should loop until all categories have a name assigned.
-            // At any point, the end user should be able to see a snapshot of the current state of the array,
-            // and if the program is exited early, it will print out the current state of the array.
+            Acceptance Criteria:
+                -The user is never asked to type “2” or “3” at the “Enter your name” prompt.
+                - If overwrite is declined, program returns to the menu(or restarts person input cleanly—your choice, just be consistent).
+                - Snapshot works from the menu reliably.
 
-            // Darien Comment: After each input, there should now be a menu option to choose whether to continue, exit, or view snapshot.
-            // This can be done ideally via prompt menu after each input, or by having the system wait for special keystrokes at any time.
-            // E.G, 1 to continue, 2 to snapshot, 3 to exit. If this choice is selected, the user must be made aware of the special keystrokes at the beginning of the program.
-            // MAX: decided to go with the menu option before each name input for clarity.
-
-
-            // adding parse function to connect array to already existing enum.
-            var categories = Enum.GetNames(typeof(AgeCategory))
+            */
+                                // adding parse function to connect array to already existing enum.
+                                var categories = Enum.GetNames(typeof(AgeCategory))
                                  .Select(n => Enum.Parse<AgeCategory>(n))
                                  .ToArray();
             var assigned = categories.ToDictionary(c => c, c => string.Empty);  
