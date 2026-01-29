@@ -1,6 +1,4 @@
-﻿// MAX NOTE: Current Commit of code RUNS but is UNFINSIHED.
-// Yet to add loop that forces completion of array before exitting.
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,20 +39,21 @@ namespace InternConsoleApp
 
 
 
+            // adding parse function to connect array to already existing enum.
             var categories = Enum.GetNames(typeof(AgeCategory))
                                  .Select(n => Enum.Parse<AgeCategory>(n))
                                  .ToArray();
             var assigned = categories.ToDictionary(c => c, c => string.Empty);  
 
+            // Thought it'd be best to make it clear for the end user.
             Console.WriteLine("Welcome to the Age Category Assigner!");
-            Console.WriteLine("You will be prompted to enter people until every age category has anmae assigned.");
+            Console.WriteLine("You will be prompted to enter people until every age category has a name assigned.");
             Console.WriteLine("At the name prompt you can type 'snapshot' to view current assignments or 'exit' to quit early.\n");
 
             bool exitRequested = false;
 
-
+            // Loop until all categories are assigned or exit is requested
             while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
-
             {
                 // Ask for user's name
                 Console.Write("Enter your name: ");
@@ -78,8 +77,6 @@ namespace InternConsoleApp
                     Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
                     continue;
                 }
-
-
 
 
 
@@ -146,9 +143,6 @@ namespace InternConsoleApp
                     assigned[category] = name;
 
 
-
-
-
                     //Boolean for AgeCategory-dependent Message
 
                     Console.WriteLine();
@@ -176,20 +170,37 @@ namespace InternConsoleApp
 
 
                     Console.WriteLine();
-                    Console.WriteLine("Final snapshot:");
+                    Console.WriteLine("Current snapshot:");
                     PrintSnapshot(assigned);
 
-                    Console.WriteLine();
-                    Console.WriteLine("Press any key to exit...");
-                    Console.ReadKey();
+                    //successfully assigned current name; break inner birth year loop to return to outer name loop
+                    break;
+                }//end of inner borthyear loop
+            }//end of outer name loop
 
-
-                    return; // Added return statement to explicitly indicate the end of Main method
-                }
+            //after loop ends, either all categories assigned or exit requested
+            if (exitRequested)
+            {
+                Console.WriteLine("\nExiting early. Current Snapshot: ");
+                PrintSnapshot(assigned);
+                Console.WriteLine();
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+                return;
             }
-        }
-                   // still needs two keystrokes on this laptop to exit. 
 
+            //After all categories are assigned
+            Console.WriteLine("\nAll age categories filled. Final Snapshot: \n");
+            PrintSnapshot(assigned);
+           Console.WriteLine();
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
+
+
+            return; // Added return statement to explicitly indicate the end of Main method
+                }
+
+        // Function to print current snapshot of assigned categories
         private static void PrintSnapshot(Dictionary<AgeCategory,string> assigned)
         {
             Console.WriteLine("\n -- Category Snapshot --");
@@ -199,7 +210,9 @@ namespace InternConsoleApp
                 Console.WriteLine($"{(int)kv.Key}: {kv.Key} => {assignedName}");
             }
         }
-            private static AgeCategory GetCategory(int age)
+
+        // Function to determine age category based on age
+        private static AgeCategory GetCategory(int age)
             {
                 if (age >= 0 && age <= 2) return AgeCategory.Infant;
                 if (age >= 3 && age <= 12) return AgeCategory.Child;
