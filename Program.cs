@@ -56,76 +56,31 @@ namespace InternConsoleApp
 
             bool exitRequested = false;
 
-            // Loop until all categories are assigned or exit is requested
+            //MAIN LOOP: continue until all categories are assigned or exit is requested
             while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
             {
-                // Ask for user's name
-                Console.Write("\nEnter your name: ");
-                string nameInput = (Console.ReadLine() ?? "").Trim();
 
-                if (string.Equals(nameInput, "2", StringComparison.OrdinalIgnoreCase))
-                {
-                    PrintSnapshot(assigned);
-                    continue;
-                }
-
-                if (string.Equals(nameInput, "3", StringComparison.OrdinalIgnoreCase))
+                //SHOW MENU athe start of cycle (menu handles snapshot internally)
+                int menuChoice; = PromptMenuChoices(assigned);
+                if (menuChoice == 3)
                 {
                     exitRequested = true;
                     break;
                 }
 
-                //Checking for only letter inputs
-                if (string.IsNullOrWhiteSpace(nameInput) || !nameInput.All(char.IsLetter))
-                {
-                    Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
-                    continue;
-                }
+                //menuChoice == 1 - proceed to collect person data
+                string name = PromptName();
+                // get birth year (and validate it)
+                int birthYear = PromptBirthYear();
+                var currentDate = DateOnly.FromDateTime(DateTime.Now);
+                int age = currentDate.Year - birthYear;
 
-                string name = nameInput;
-
+                
                 //Setting age integer to then be updated by string parsing
                 //Changing the ageinput to Birth Year input
                 int age;
                 int BirthYear;
-                var currentYear = DateTime.Now.Year;
-
-                while (true)
-                {
-                    // Ask for user's age
-                    Console.Write("Enter your Birth Year: ");
-                    String BirthYearInput = (Console.ReadLine() ?? string.Empty).Trim();
-
-                    // Parse BirthYear string to int safely
-                    DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
-
-                    if (!int.TryParse(BirthYearInput, out BirthYear))
-                    {
-                        Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
-                        continue;
-                    }
-
-                    if (BirthYear > currentYear)
-                    {
-                        Console.WriteLine("Invalid Input. This year has not happened yet -_-");
-                        continue;
-                    }
-
-                    if (BirthYear < currentYear - 130)
-                    {
-                        Console.WriteLine("Invalid Input. No one lives that long these days.");
-                        continue;
-                    }
-
-                    //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
-                    age = currentDate.Year - BirthYear;
-                    if (age < 0)
-                    {
-                        Console.WriteLine("Invalid age. Please Reenter Birth Year");
-                        continue;
-                    }
-
-
+                
                     // Fetching Age to Determine Age Category. Set in static block at the bottom
                     // max: determining category and index
                     AgeCategory category = GetCategory(age);
@@ -179,31 +134,7 @@ namespace InternConsoleApp
                     }
 
 
-                    //showing PROMPT MENU After Each Successful Assignment
-                    while (true)
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine ("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
-                        string postChoice = (Console.ReadLine() ?? "").Trim();
-
-                        if (postChoice == "1")
-                        {
-                            break; //continue to next name input
-                        }
-                        else if (postChoice == "2")
-                        {
-                            PrintSnapshot(assigned);
-                        }
-                        else if (postChoice == "3")
-                        {
-                            exitRequested = true;
-                            break;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
-                        }
-                    }
+              
 
                     // After handling menu choice, break birth year loop if exit requested
                     
@@ -232,6 +163,102 @@ namespace InternConsoleApp
 
             return; // Added return statement to explicitly indicate the end of Main method
                 }
+
+        //Prompt Functions
+
+        // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
+        private static int PromptMenuChoice(Dictionary<AgeCategory,string> assigned)
+        {
+            //showing PROMPT MENU After Each Successful Assignment
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
+                string postChoice = (Console.ReadLine() ?? "").Trim();
+
+                if (postChoice == "1")
+                {
+                    break; //continue to next name input
+                }
+                else if (postChoice == "2")
+                {
+                    PrintSnapshot(assigned);
+                    //loop back to menu after showing snapshot
+                    continue;
+                }
+                else if (postChoice == "3")
+                {
+                    return 3; //exit requested
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
+                }
+            }
+
+        }
+
+        //NAME FUNCTION -- Function to prompt for name input
+        private static string PromptName()
+        {
+            while (true)
+            {
+                // Ask for user's name
+                Console.Write("\nEnter your name: ");
+                string nameInput = (Console.ReadLine() ?? "").Trim();
+
+                //Checking for only letter inputs
+                if (string.IsNullOrWhiteSpace(nameInput) || !nameInput.All(char.IsLetter))
+                {
+                    Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
+                    continue;
+                }
+
+                return nameInput;
+            }
+            }
+
+        //BIRTH YEAR FUNCTION -- Function to prompt for birth year input
+        private static int PromptBirthYear()
+        {
+    var currentYear = DateTime.Now.Year;
+    while (true)
+    {
+        // Ask for user's age
+        Console.Write("Enter your Birth Year: ");
+        String BirthYearInput = (Console.ReadLine() ?? string.Empty).Trim();
+
+        // Parse BirthYear string to int safely
+        DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+        if (!int.TryParse(BirthYearInput, out BirthYear))
+        {
+            Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
+            continue;
+        }
+
+        if (BirthYear > currentYear)
+        {
+            Console.WriteLine("Invalid Input. This year has not happened yet -_-");
+            continue;
+        }
+
+        if (BirthYear < currentYear - 130)
+        {
+            Console.WriteLine("Invalid Input. No one lives that long these days.");
+            continue;
+        }
+
+        //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
+        age = currentDate.Year - BirthYear;
+        if (age < 0)
+        {
+            Console.WriteLine("Invalid age. Please Reenter Birth Year");
+            continue;
+        }
+
+
+    }
 
         // Function to print current snapshot of assigned categories
         private static void PrintSnapshot(Dictionary<AgeCategory,string> assigned)
