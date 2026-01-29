@@ -144,6 +144,7 @@ namespace InternConsoleApp
 
                     assigned[category] = name;
 
+                   
 
                     //Boolean for AgeCategory-dependent Message
 
@@ -170,8 +171,16 @@ namespace InternConsoleApp
                             break;
                     }
 
+                    //if all categories assigned after this, break to avoid extra prompt
+                    if (!assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)))
+                    {
+                        //all categories assigned - break birthyear loop and let outer loop end
+                        break;
+                    }
+
+
                     //showing PROMPT MENU After Each Successful Assignment
-                    while(true)
+                    while (true)
                     {
                         Console.WriteLine();
                         Console.WriteLine ("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
