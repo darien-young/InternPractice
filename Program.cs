@@ -40,6 +40,8 @@ namespace InternConsoleApp
             // Darien Comment: After each input, there should now be a menu option to choose whether to continue, exit, or view snapshot.
             // This can be done ideally via prompt menu after each input, or by having the system wait for special keystrokes at any time.
             // E.G, 1 to continue, 2 to snapshot, 3 to exit. If this choice is selected, the user must be made aware of the special keystrokes at the beginning of the program.
+            // MAX: decided to go with the menu option before each name input for clarity.
+
 
             // adding parse function to connect array to already existing enum.
             var categories = Enum.GetNames(typeof(AgeCategory))
@@ -50,7 +52,7 @@ namespace InternConsoleApp
             // Thought it'd be best to make it clear for the end user.
             Console.WriteLine("Welcome to the Age Category Assigner!");
             Console.WriteLine("You will be prompted to enter people until every age category has a name assigned.");
-            Console.WriteLine("At the name prompt you can type 'snapshot' to view current assignments or 'exit' to quit early.\n");
+            Console.WriteLine("Press 1 To Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.\n");
 
             bool exitRequested = false;
 
@@ -58,16 +60,16 @@ namespace InternConsoleApp
             while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
             {
                 // Ask for user's name
-                Console.Write("Enter your name: ");
+                Console.Write("\nEnter your name: ");
                 string nameInput = (Console.ReadLine() ?? "").Trim();
 
-                if (string.Equals(nameInput, "snapshot", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(nameInput, "2", StringComparison.OrdinalIgnoreCase))
                 {
                     PrintSnapshot(assigned);
                     continue;
                 }
 
-                if (string.Equals(nameInput, "exit", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(nameInput, "3", StringComparison.OrdinalIgnoreCase))
                 {
                     exitRequested = true;
                     break;
@@ -136,7 +138,7 @@ namespace InternConsoleApp
                         if (!string.Equals(answer, "y", StringComparison.OrdinalIgnoreCase))
                         {
                             Console.WriteLine("Not overwriting. Move to next input.\n");
-                            continue;
+                            break;
                         }
                     }
 
@@ -168,10 +170,34 @@ namespace InternConsoleApp
                             break;
                     }
 
-                    Console.WriteLine();
-                    Console.WriteLine("Current snapshot:");
-                    PrintSnapshot(assigned);
+                    //showing PROMPT MENU After Each Successful Assignment
+                    while(true)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine ("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
+                        string postChoice = (Console.ReadLine() ?? "").Trim();
 
+                        if (postChoice == "1")
+                        {
+                            break; //continue to next name input
+                        }
+                        else if (postChoice == "2")
+                        {
+                            PrintSnapshot(assigned);
+                        }
+                        else if (postChoice == "3")
+                        {
+                            exitRequested = true;
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
+                        }
+                    }
+
+                    // After handling menu choice, break birth year loop if exit requested
+                    
                     //successfully assigned current name; break inner birth year loop to return to outer name loop
                     break;
                 }//end of inner birthyear loop
