@@ -37,7 +37,9 @@ namespace InternConsoleApp
             // At any point, the end user should be able to see a snapshot of the current state of the array,
             // and if the program is exited early, it will print out the current state of the array.
 
-
+            // Darien Comment: After each input, there should now be a menu option to choose whether to continue, exit, or view snapshot.
+            // This can be done ideally via prompt menu after each input, or by having the system wait for special keystrokes at any time.
+            // E.G, 1 to continue, 2 to snapshot, 3 to exit. If this choice is selected, the user must be made aware of the special keystrokes at the beginning of the program.
 
             // adding parse function to connect array to already existing enum.
             var categories = Enum.GetNames(typeof(AgeCategory))
@@ -77,8 +79,6 @@ namespace InternConsoleApp
                     Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
                     continue;
                 }
-
-
 
                 string name = nameInput;
 
@@ -168,14 +168,13 @@ namespace InternConsoleApp
                             break;
                     }
 
-
                     Console.WriteLine();
                     Console.WriteLine("Current snapshot:");
                     PrintSnapshot(assigned);
 
                     //successfully assigned current name; break inner birth year loop to return to outer name loop
                     break;
-                }//end of inner borthyear loop
+                }//end of inner birthyear loop
             }//end of outer name loop
 
             //after loop ends, either all categories assigned or exit requested
@@ -192,10 +191,9 @@ namespace InternConsoleApp
             //After all categories are assigned
             Console.WriteLine("\nAll age categories filled. Final Snapshot: \n");
             PrintSnapshot(assigned);
-           Console.WriteLine();
+            Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
-
 
             return; // Added return statement to explicitly indicate the end of Main method
                 }
@@ -222,7 +220,6 @@ namespace InternConsoleApp
                 if (age >= 65) return AgeCategory.Senior;
                 return AgeCategory.Adult; // Default case, should not reach here
         }
-
-        }
     }
+}
 
