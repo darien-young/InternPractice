@@ -1,6 +1,10 @@
-﻿using System;
-using System.ComponentModel.Design;
+﻿// MAX NOTE: Current Commit of code RUNS but is UNFINSIHED.
+// Yet to add loop that forces completion of array before exitting.
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 
 namespace InternConsoleApp
 {
@@ -35,104 +39,166 @@ namespace InternConsoleApp
             // At any point, the end user should be able to see a snapshot of the current state of the array,
             // and if the program is exited early, it will print out the current state of the array.
 
-            string name = "";
-            while (true)
+
+
+            var categories = Enum.GetNames(typeof(AgeCategory))
+                                 .Select(n => Enum.Parse<AgeCategory>(n))
+                                 .ToArray();
+            var assigned = categories.ToDictionary(c => c, c => string.Empty);  
+
+            Console.WriteLine("Welcome to the Age Category Assigner!");
+            Console.WriteLine("You will be prompted to enter people until every age category has anmae assigned.");
+            Console.WriteLine("At the name prompt you can type 'snapshot' to view current assignments or 'exit' to quit early.\n");
+
+            bool exitRequested = false;
+
+
+            while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
+
             {
                 // Ask for user's name
                 Console.Write("Enter your name: ");
-                name = Console.ReadLine();
+                string nameInput = (Console.ReadLine() ?? "").Trim();
+
+                if (string.Equals(nameInput, "snapshot", StringComparison.OrdinalIgnoreCase))
+                {
+                    PrintSnapshot(assigned);
+                    continue;
+                }
+
+                if (string.Equals(nameInput, "exit", StringComparison.OrdinalIgnoreCase))
+                {
+                    exitRequested = true;
+                    break;
+                }
 
                 //Checking for only letter inputs
-                if (!string.IsNullOrWhiteSpace(name) && name.All(char.IsLetter))
+                if (string.IsNullOrWhiteSpace(nameInput) || !nameInput.All(char.IsLetter))
                 {
-                    break;
+                    Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
+                    continue;
                 }
 
-                Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
 
+
+
+
+                string name = nameInput;
+
+                //Setting age integer to then be updated by string parsing
+                //Changing the ageinput to Birth Year input
+                int age;
+                int BirthYear;
+                var currentYear = DateTime.Now.Year;
+
+                while (true)
+                {
+                    // Ask for user's age
+                    Console.Write("Enter your Birth Year: ");
+                    String BirthYearInput = (Console.ReadLine() ?? string.Empty).Trim();
+
+                    // Parse BirthYear string to int safely
+                    DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+                    if (!int.TryParse(BirthYearInput, out BirthYear))
+                    {
+                        Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
+                        continue;
+                    }
+
+                    if (BirthYear > currentYear)
+                    {
+                        Console.WriteLine("Invalid Input. This year has not happened yet -_-");
+                        continue;
+                    }
+
+                    if (BirthYear < currentYear - 130)
+                    {
+                        Console.WriteLine("Invalid Input. No one lives that long these days.");
+                        continue;
+                    }
+
+                    //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
+                    age = currentDate.Year - BirthYear;
+                    if (age < 0)
+                    {
+                        Console.WriteLine("Invalid age. Please Reenter Birth Year");
+                        continue;
+                    }
+
+
+                    // Fetching Age to Determine Age Category. Set in static block at the bottom
+                    // max: determining category and index
+                    AgeCategory category = GetCategory(age);
+
+                    //If an age category is already assigned, ask to overwrite
+                    if (!string.IsNullOrWhiteSpace(assigned[category]))
+                    {
+                        Console.WriteLine($"The category '{category}' is already assigned to '{assigned[category]}'. Would you like to overwrite it? [y/n]");
+                        string answer = (Console.ReadLine() ?? "").Trim();
+                        if (!string.Equals(answer, "y", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Console.WriteLine("Not overwriting. Move to next input.\n");
+                            continue;
+                        }
+                    }
+
+                    assigned[category] = name;
+
+
+
+
+
+                    //Boolean for AgeCategory-dependent Message
+
+                    Console.WriteLine();
+                    switch (category)
+                    {
+                        case AgeCategory.Infant:
+                            Console.WriteLine($"Googoo, {name},\ngoo ga goo goo googooga.");
+                            break;
+                        case AgeCategory.Child:
+                            Console.WriteLine($"Hi, {name},\nlet's go play outside.");
+                            break;
+                        case AgeCategory.Teenager:
+                            Console.WriteLine($"Yo, {name},\nlet's go to high school.");
+                            break;
+                        case AgeCategory.YoungAdult:
+                            Console.WriteLine($"Hey, {name},\nlet's go out for a drink");
+                            break;
+                        case AgeCategory.Adult:
+                            Console.WriteLine($"Hello, {name},\nlet's go do our taxes.");
+                            break;
+                        case AgeCategory.Senior:
+                            Console.WriteLine($"Good day, {name},\nlet's go write our will!");
+                            break;
+                    }
+
+
+                    Console.WriteLine();
+                    Console.WriteLine("Final snapshot:");
+                    PrintSnapshot(assigned);
+
+                    Console.WriteLine();
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey();
+
+
+                    return; // Added return statement to explicitly indicate the end of Main method
+                }
             }
+        }
+                   // still needs two keystrokes on this laptop to exit. 
 
-            //Setting age integer to then be updated by string parsing
-            //Changing the ageinput to Birth Year input
-            int age = 0;
-            int BirthYear;
-            var currentYear = DateTime.Now.Year;
-            while (true)
+        private static void PrintSnapshot(Dictionary<AgeCategory,string> assigned)
+        {
+            Console.WriteLine("\n -- Category Snapshot --");
+            foreach (var kv in assigned)
             {
-                // Ask for user's age
-                Console.Write("Enter your Birth Year: ");
-                String BirthYearInput = Console.ReadLine();
-
-                //Parsing the BirthYear String to Int type
-                BirthYear = int.Parse(BirthYearInput);
-                DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
-
-
-                if (!int.TryParse(BirthYearInput, out BirthYear))
-                {
-                    Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
-                    continue;
-                }
-
-                if (BirthYear > currentYear)
-                {
-                    Console.WriteLine("Invalid Input. This year has not happened yet -_-");
-                    continue;
-                }
-
-                if (BirthYear < currentYear - 130)
-                {
-                    Console.WriteLine("Invalid Input. No one lives that long these days.");
-                    continue;
-                }
-
-                //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
-                age = currentDate.Year - BirthYear;
-
-
-                //checking for only numeric inputs
-                if (age >= 0)
-                {
-                    break;
-                }
-                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
+                string assignedName = string.IsNullOrWhiteSpace(kv.Value) ? "(empty)" : kv.Value;
+                Console.WriteLine($"{(int)kv.Key}: {kv.Key} => {assignedName}");
             }
-
-            // Fetching Age to Determine Age Category. Set in static block at the bottom
-            AgeCategory ageCategory = GetCategory(age);
-
-            //Boolean for AgeCategory-dependent Message
-
-            Console.WriteLine();
-            switch (ageCategory)
-            {
-                case AgeCategory.Infant:
-                    Console.WriteLine($"Googoo, {name},\ngoo ga goo goo googooga.");
-                    break;
-                case AgeCategory.Child:
-                    Console.WriteLine($"Hi, {name},\nlet's go play outside.");
-                    break;
-                case AgeCategory.Teenager:
-                    Console.WriteLine($"Yo, {name},\nlet's go to high school.");
-                    break;
-                case AgeCategory.YoungAdult:
-                    Console.WriteLine($"Hey, {name},\nlet's go out for a drink");
-                    break;
-                case AgeCategory.Adult:
-                    Console.WriteLine($"Hello, {name},\nlet's go do our taxes.");
-                    break;
-                case AgeCategory.Senior:
-                    Console.WriteLine($"Good day, {name},\nlet's go write our will!");
-                    break;
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
-
-            return; // Added return statement to explicitly indicate the end of Main method
-        }      // still needs two keystrokes on this laptop to exit. 
-
+        }
             private static AgeCategory GetCategory(int age)
             {
                 if (age >= 0 && age <= 2) return AgeCategory.Infant;
@@ -146,3 +212,4 @@ namespace InternConsoleApp
 
         }
     }
+
