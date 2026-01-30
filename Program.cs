@@ -20,10 +20,9 @@
                 - Snapshot works from the menu reliably.
 
 
-            Comments, Functions:
-             - You're calculating age from birth year in multiple places. Consolidate that logic.
-             - The overwrite prompt logic is a bit nested. Consider refactoring for clarity. Hint: early returns or separate functions might help. 
-                Use a boolean to give the system a clear path forward. 
+            (New) Comments, Functions:
+             - Let's try cleaning up main and implementing the switch messages from the assigning function.
+             - Once you're satisfied with the logic flow and code structure, try expanding the array to holding multiple names per category.
             */
 
 using System;
@@ -69,7 +68,6 @@ namespace InternConsoleApp
             //MAIN LOOP: continue until all categories are assigned or exit is requested
             while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
             {
-               
 
                 //menuChoice == 1 - proceed to collect person data
                 string name = PromptName();
