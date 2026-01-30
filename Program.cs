@@ -21,11 +21,11 @@
 
 
             (New) Comments, Functions:
-             - Let's try cleaning up main and implementing the switch messages from the assigning function.
+             - Let's try cleaning up main and implementing the switch messages from the assigning function. [MAX: Done.]
              - Once you're satisfied with the logic flow and code structure, try expanding the array to holding multiple names per category.
             */
 
-using System;
+using System;   
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -46,7 +46,7 @@ namespace InternConsoleApp
            var categories = Enum.GetNames(typeof(AgeCategory))
                                  .Select(n => Enum.Parse<AgeCategory>(n))
                                  .ToArray();
-            var assigned = categories.ToDictionary(c => c, c => string.Empty);  
+            var assigned = categories.ToDictionary(c => c, c => new List<string>());  
 
             // Thought it'd be best to make it clear for the end user.
             Console.WriteLine("Welcome to the Age Category Assigner!");
@@ -66,7 +66,7 @@ namespace InternConsoleApp
             bool exitRequested = false;
 
             //MAIN LOOP: continue until all categories are assigned or exit is requested
-            while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
+            while (assigned.Any(kv => kv.Value.Count == 0) && !exitRequested)
             {
 
                 //menuChoice == 1 - proceed to collect person data
@@ -76,6 +76,7 @@ namespace InternConsoleApp
 
                 //Assignment Attempt
                 var result = TryAssignPerson(name, birthYear, assigned);
+                
                 if (result == AssignResult.Exit) 
                 {  
                     exitRequested = true; 
@@ -91,32 +92,9 @@ namespace InternConsoleApp
                 int age = CalculateAge(birthYear);
                 AgeCategory category = GetCategory(age);
 
-                //Boolean for AgeCategory-dependent Message
-                Console.WriteLine();
-                    switch (category)
-                    {
-                        case AgeCategory.Infant:
-                            Console.WriteLine($"Googoo, {name},\ngoo ga goo goo googooga.");
-                            break;
-                        case AgeCategory.Child:
-                            Console.WriteLine($"Hi, {name},\nlet's go play outside.");
-                            break;
-                        case AgeCategory.Teenager:
-                            Console.WriteLine($"Yo, {name},\nlet's go to high school.");
-                            break;
-                        case AgeCategory.YoungAdult:
-                            Console.WriteLine($"Hey, {name},\nlet's go out for a drink");
-                            break;
-                        case AgeCategory.Adult:
-                            Console.WriteLine($"Hello, {name},\nlet's go do our taxes.");
-                            break;
-                        case AgeCategory.Senior:
-                            Console.WriteLine($"Good day, {name},\nlet's go write our will!");
-                            break;
-                    }
-
+               
                     //if all categories assigned after this, break to avoid extra prompt
-                    if (!assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)))
+                    if (!assigned.Any(kv => kv.Value.Count == 0))
                     {
                         //all categories assigned - break birthyear loop and let outer loop end
                         break;
@@ -169,32 +147,83 @@ namespace InternConsoleApp
             Senior//65+
         }
 
-        // ASSIGNMENT RESULT FUNCTION
+        // ASSIGNMENT RESULT ENUM
         private enum AssignResult { Assigned, Decline, Exit}
 
-        private static AssignResult TryAssignPerson(string name, int birthYear, Dictionary<AgeCategory,string> assigned)
+        //ASSIGN PERSON FUNCTION -- Now handles multiple names per category
+        // and prints the category-dependent message
+        // If category already assigned, user can add, replace , or cancel
+        private static AssignResult TryAssignPerson(string name, int birthYear, Dictionary<AgeCategory, List<string>> assigned)
         {
             int age = CalculateAge(birthYear);
             AgeCategory category = GetCategory(age);
 
-            if (!string.IsNullOrWhiteSpace(assigned[category]))
-            {
-                Console.WriteLine($"The category '{category}' is already assigned to '{assigned[category]}'. Would you like to overwrite it? [y/n]");
-                string answer = (Console.ReadLine() ?? "").Trim();
-                if (!string.Equals(answer, "y", StringComparison.OrdinalIgnoreCase))
-                {
-                    // User declined overwrite
-                    Console.WriteLine("Not Overwriting. Returning to menu...");
+            var list = assigned[category];
 
-                    //show prompt menu
+            if (list.Count > 0)
+            {
+                Console.WriteLine($"The category {category} already has {list.Count} entr{(list.Count == 1 ? "y" : "ies")}: {string.Join(",", list)}");
+                Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel to main menu");
+                string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
+
+                if (choice == "c" || choice == "cancel")
+                {
+                    Console.WriteLine("Canceled. Returning to menu...");
+                    // fallback to menu
                     int fallback = PromptMenuChoice(assigned);
-                    if (fallback == 3) return AssignResult.Exit; //user chose to exit from menu
-                    return AssignResult.Decline; //user declined overwrite
+                    if (fallback == 3) return AssignResult.Exit;
+                    return AssignResult.Decline;
+                }
+
+                if (choice == "r" || choice == "replace")
+                {
+                    list.Clear();
+                    list.Add(name);
+                }
+                else if (choice == "a" || choice == "add")
+                {
+                    list.Add(name);
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Choice. Returning to menu...");
+                    // fallback to menu
+                    int fallback = PromptMenuChoice(assigned);
+                    if (fallback == 3) return AssignResult.Exit;
+                    return AssignResult.Decline;
                 }
             }
+            else
+            {
+                //no existing names, just add
+                list.Add(name);
+            }
 
-            assigned[category] = name;
-            // let caller print messages based on category
+            //Boolean for AgeCategory-dependent Message
+            Console.WriteLine();
+            switch (category)
+            {
+                case AgeCategory.Infant:
+                    Console.WriteLine($"Googoo, {name},\ngoo ga goo goo googooga.");
+                    break;
+                case AgeCategory.Child:
+                    Console.WriteLine($"Hi, {name},\nlet's go play outside.");
+                    break;
+                case AgeCategory.Teenager:
+                    Console.WriteLine($"Yo, {name},\nlet's go to high school.");
+                    break;
+                case AgeCategory.YoungAdult:
+                    Console.WriteLine($"Hey, {name},\nlet's go out for a drink");
+                    break;
+                case AgeCategory.Adult:
+                    Console.WriteLine($"Hello, {name},\nlet's go do our taxes.");
+                    break;
+                case AgeCategory.Senior:
+                    Console.WriteLine($"Good day, {name},\nlet's go write our will!");
+                    break;
+            }
+
+           // let caller print messages based on category
             return AssignResult.Assigned;
         }
 
@@ -202,7 +231,7 @@ namespace InternConsoleApp
 
 
         // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
-        private static int PromptMenuChoice(Dictionary<AgeCategory,string> assigned)
+        private static int PromptMenuChoice(Dictionary<AgeCategory, List<string>> assigned)
         {
             while (true)
             {
@@ -232,7 +261,7 @@ namespace InternConsoleApp
 
         }
 
-        //NAME FUNCTION -- Function to prompt for name input
+        //NAME FUNCTION -- Function to prompt for name inputs
         private static string PromptName()
         {
             while (true)
@@ -298,12 +327,12 @@ namespace InternConsoleApp
     }
 
         // SNAPSHOT FUNCTION to print current snapshot of assigned categories
-        private static void PrintSnapshot(Dictionary<AgeCategory,string> assigned)
+        private static void PrintSnapshot(Dictionary<AgeCategory,List<string>> assigned)
         {
             Console.WriteLine("\n -- Category Snapshot --");
             foreach (var kv in assigned)
             {
-                string assignedName = string.IsNullOrWhiteSpace(kv.Value) ? "(empty)" : kv.Value;
+                string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
                 Console.WriteLine($"{(int)kv.Key}: {kv.Key} => {assignedName}");
             }
         }
