@@ -1,4 +1,27 @@
-﻿using System;
+﻿/* Phase 3.2 - Cleaner Logic Flow 
+             Separate Concerns into 3 functions:
+
+            PromptName()
+            PromptBirthYear()
+            PromptMenuChoice() - [return 1, 2, or 3]
+
+            Rules:
+                -PromptMenuChoice() only accepts specific integers.
+                -PromptName() accepts names.
+
+            Program Shows Menu:
+                -at the very start(optional)
+                - after each successful assignment(required)
+                - snapshot choice loops back to menu
+
+            Acceptance Criteria:
+                -The user is never asked to type “2” or “3” at the “Enter your name” prompt.
+                - If overwrite is declined, program returns to the menu(or restarts person input cleanly—your choice, just be consistent).
+                - Snapshot works from the menu reliably.
+
+            */
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -21,30 +44,9 @@ namespace InternConsoleApp
         }
         static void Main(string[] args)
         {
-           /* Phase 3.2 - Cleaner Logic Flow 
-             Separate Concerns into 3 functions:
-
-            PromptName()
-            PromptBirthYear()
-            PromptMenuChoice() - [return 1, 2, or 3]
-
-            Rules:
-                -PromptMenuChoice() only accepts specific integers.
-                -PromptName() accepts names.
-
-            Program Shows Menu:
-                -at the very start(optional)
-                - after each successful assignment(required)
-                - snapshot choice loops back to menu
-
-            Acceptance Criteria:
-                -The user is never asked to type “2” or “3” at the “Enter your name” prompt.
-                - If overwrite is declined, program returns to the menu(or restarts person input cleanly—your choice, just be consistent).
-                - Snapshot works from the menu reliably.
-
-            */
+           
                                 // adding parse function to connect array to already existing enum.
-                                var categories = Enum.GetNames(typeof(AgeCategory))
+           var categories = Enum.GetNames(typeof(AgeCategory))
                                  .Select(n => Enum.Parse<AgeCategory>(n))
                                  .ToArray();
             var assigned = categories.ToDictionary(c => c, c => string.Empty);  
@@ -60,13 +62,7 @@ namespace InternConsoleApp
             while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
             {
 
-                //SHOW MENU athe start of cycle (menu handles snapshot internally)
-                int menuChoice; = PromptMenuChoices(assigned);
-                if (menuChoice == 3)
-                {
-                    exitRequested = true;
-                    break;
-                }
+                
 
                 //menuChoice == 1 - proceed to collect person data
                 string name = PromptName();
@@ -74,16 +70,10 @@ namespace InternConsoleApp
                 int birthYear = PromptBirthYear();
                 var currentDate = DateOnly.FromDateTime(DateTime.Now);
                 int age = currentDate.Year - birthYear;
-
+             
                 
-                //Setting age integer to then be updated by string parsing
-                //Changing the ageinput to Birth Year input
-                int age;
-                int BirthYear;
-                
-                    // Fetching Age to Determine Age Category. Set in static block at the bottom
-                    // max: determining category and index
-                    AgeCategory category = GetCategory(age);
+                // Fetching Age to Determine Age Category. Set in static block at the bottom
+                AgeCategory category = GetCategory(age);
 
                     //If an age category is already assigned, ask to overwrite
                     if (!string.IsNullOrWhiteSpace(assigned[category]))
@@ -92,17 +82,30 @@ namespace InternConsoleApp
                         string answer = (Console.ReadLine() ?? "").Trim();
                         if (!string.Equals(answer, "y", StringComparison.OrdinalIgnoreCase))
                         {
-                            Console.WriteLine("Not overwriting. Move to next input.\n");
-                            break;
+                            Console.WriteLine("Not overwriting. Returning to Menu. \n");
+
+                        ////SHOW MENU now at the END of cycle (menu handles snapshot internally)
+                        int fallbackChoice = PromptMenuChoice(assigned);
+                            if (fallbackChoice == 3)
+                            {
+                                exitRequested = true;
+                                break; //exit main loop
                         }
+                            else
+                            {
+                            // If the user chose to continue (1), restart the outer loop to prompt for a new person.
+                            continue; 
+                        }
+
+                    }
                     }
 
                     assigned[category] = name;
 
+
                    
 
                     //Boolean for AgeCategory-dependent Message
-
                     Console.WriteLine();
                     switch (category)
                     {
@@ -133,15 +136,15 @@ namespace InternConsoleApp
                         break;
                     }
 
-
-              
-
-                    // After handling menu choice, break birth year loop if exit requested
-                    
-                    //successfully assigned current name; break inner birth year loop to return to outer name loop
-                    break;
-                }//end of inner birthyear loop
-            }//end of outer name loop
+                    //SHOW MENU after each successful assignment
+                    int postMenuChoice = PromptMenuChoice(assigned);
+                    if (postMenuChoice == 3)
+                    {
+                        exitRequested = true;
+                        break;
+                    }
+                    //otherwise continue to next loop iteration
+                }
 
             //after loop ends, either all categories assigned or exit requested
             if (exitRequested)
@@ -169,7 +172,6 @@ namespace InternConsoleApp
         // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
         private static int PromptMenuChoice(Dictionary<AgeCategory,string> assigned)
         {
-            //showing PROMPT MENU After Each Successful Assignment
             while (true)
             {
                 Console.WriteLine();
@@ -178,7 +180,7 @@ namespace InternConsoleApp
 
                 if (postChoice == "1")
                 {
-                    break; //continue to next name input
+                    return 1; //continue requested
                 }
                 else if (postChoice == "2")
                 {
@@ -216,51 +218,53 @@ namespace InternConsoleApp
 
                 return nameInput;
             }
-            }
+        }
 
         //BIRTH YEAR FUNCTION -- Function to prompt for birth year input
         private static int PromptBirthYear()
         {
-    var currentYear = DateTime.Now.Year;
-    while (true)
-    {
-        // Ask for user's age
-        Console.Write("Enter your Birth Year: ");
-        String BirthYearInput = (Console.ReadLine() ?? string.Empty).Trim();
-
-        // Parse BirthYear string to int safely
-        DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
-
-        if (!int.TryParse(BirthYearInput, out BirthYear))
+        var currentYear = DateTime.Now.Year;
+        while (true)
         {
-            Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
-            continue;
-        }
+            // Ask for user's age
+            Console.Write("Enter your Birth Year: ");
+            String BirthYearInput = (Console.ReadLine() ?? string.Empty).Trim();
 
-        if (BirthYear > currentYear)
-        {
-            Console.WriteLine("Invalid Input. This year has not happened yet -_-");
-            continue;
-        }
+            // Parse BirthYear string to int safely
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
 
-        if (BirthYear < currentYear - 130)
-        {
-            Console.WriteLine("Invalid Input. No one lives that long these days.");
-            continue;
-        }
+            if (!int.TryParse(BirthYearInput, out int BirthYear))
+            {
+                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
+                continue;
+            }
 
-        //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
-        age = currentDate.Year - BirthYear;
-        if (age < 0)
-        {
-            Console.WriteLine("Invalid age. Please Reenter Birth Year");
-            continue;
-        }
+            if (BirthYear > currentYear)
+            {
+               Console.WriteLine("Invalid Input. This year has not happened yet -_-");
+                continue;
+            }
 
+            if (BirthYear < currentYear - 130)
+            {
+                Console.WriteLine("Invalid Input. No one lives that long these days.");
+                continue;
+            }
+
+            //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
+            currentDate = DateOnly.FromDateTime(DateTime.Now);
+            int age = currentDate.Year - BirthYear;
+            if (age < 0)
+            {
+                Console.WriteLine("Invalid age. Please Reenter Birth Year");
+                continue;
+            }
+            return BirthYear;
+        }
 
     }
 
-        // Function to print current snapshot of assigned categories
+        // SNAPSHOT FUNCTION to print current snapshot of assigned categories
         private static void PrintSnapshot(Dictionary<AgeCategory,string> assigned)
         {
             Console.WriteLine("\n -- Category Snapshot --");
