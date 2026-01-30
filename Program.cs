@@ -19,6 +19,11 @@
                 - If overwrite is declined, program returns to the menu(or restarts person input cleanly—your choice, just be consistent).
                 - Snapshot works from the menu reliably.
 
+
+            Comments, Functions:
+             - You're calculating age from birth year in multiple places. Consolidate that logic.
+             - The overwrite prompt logic is a bit nested. Consider refactoring for clarity. Hint: early returns or separate functions might help. 
+                Use a boolean to give the system a clear path forward. 
             */
 
 using System;
@@ -62,14 +67,12 @@ namespace InternConsoleApp
             while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
             {
 
-                
-
                 //menuChoice == 1 - proceed to collect person data
                 string name = PromptName();
                 // get birth year (and validate it)
                 int birthYear = PromptBirthYear();
                 var currentDate = DateOnly.FromDateTime(DateTime.Now);
-                int age = currentDate.Year - birthYear;
+                int age = currentDate.Year - birthYear; 
              
                 
                 // Fetching Age to Determine Age Category. Set in static block at the bottom
@@ -101,9 +104,6 @@ namespace InternConsoleApp
                     }
 
                     assigned[category] = name;
-
-
-                   
 
                     //Boolean for AgeCategory-dependent Message
                     Console.WriteLine();
@@ -165,7 +165,8 @@ namespace InternConsoleApp
             Console.ReadKey();
 
             return; // Added return statement to explicitly indicate the end of Main method
-                }
+        }
+        //End of Main
 
         //Prompt Functions
 
