@@ -38,15 +38,8 @@ namespace InternConsoleApp
 {
     class Program
     {
-        enum AgeCategory
-        {
-            Infant, //0-2
-            Child, //3-12  
-            Teenager,//13-17
-            YoungAdult,//18-24
-            Adult,//25-64
-            Senior//65+
-        }
+
+        //------------------------------- MAIN METHOD -------------------------------------//
         static void Main(string[] args)
         {
            
@@ -59,54 +52,49 @@ namespace InternConsoleApp
             // Thought it'd be best to make it clear for the end user.
             Console.WriteLine("Welcome to the Age Category Assigner!");
             Console.WriteLine("You will be prompted to enter people until every age category has a name assigned.");
-            Console.WriteLine("Press 1 To Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.\n");
+            //Initial Menu Prompt
+            int startMenuChoice = PromptMenuChoice(assigned);
+            if (startMenuChoice == 3)
+            {
+                Console.WriteLine("\nExiting early. Current Snapshot: ");
+                PrintSnapshot(assigned);
+                Console.WriteLine();
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+                return;
+            }
 
             bool exitRequested = false;
 
             //MAIN LOOP: continue until all categories are assigned or exit is requested
             while (assigned.Any(kv => string.IsNullOrWhiteSpace(kv.Value)) && !exitRequested)
             {
+               
 
                 //menuChoice == 1 - proceed to collect person data
                 string name = PromptName();
                 // get birth year (and validate it)
                 int birthYear = PromptBirthYear();
-                var currentDate = DateOnly.FromDateTime(DateTime.Now);
-                int age = currentDate.Year - birthYear; 
-             
-                
-                // Fetching Age to Determine Age Category. Set in static block at the bottom
+
+                //Assignment Attempt
+                var result = TryAssignPerson(name, birthYear, assigned);
+                if (result == AssignResult.Exit) 
+                {  
+                    exitRequested = true; 
+                    break; 
+                }
+                if (result == AssignResult.Decline) 
+                {
+                    
+                    continue;
+                } //returns to menu
+
+                // Assigned -> print category-dependent message
+                int age = CalculateAge(birthYear);
                 AgeCategory category = GetCategory(age);
 
-                    //If an age category is already assigned, ask to overwrite
-                    if (!string.IsNullOrWhiteSpace(assigned[category]))
-                    {
-                        Console.WriteLine($"The category '{category}' is already assigned to '{assigned[category]}'. Would you like to overwrite it? [y/n]");
-                        string answer = (Console.ReadLine() ?? "").Trim();
-                        if (!string.Equals(answer, "y", StringComparison.OrdinalIgnoreCase))
-                        {
-                            Console.WriteLine("Not overwriting. Returning to Menu. \n");
-
-                        ////SHOW MENU now at the END of cycle (menu handles snapshot internally)
-                        int fallbackChoice = PromptMenuChoice(assigned);
-                            if (fallbackChoice == 3)
-                            {
-                                exitRequested = true;
-                                break; //exit main loop
-                        }
-                            else
-                            {
-                            // If the user chose to continue (1), restart the outer loop to prompt for a new person.
-                            continue; 
-                        }
-
-                    }
-                    }
-
-                    assigned[category] = name;
-
-                    //Boolean for AgeCategory-dependent Message
-                    Console.WriteLine();
+                //Boolean for AgeCategory-dependent Message
+                Console.WriteLine();
                     switch (category)
                     {
                         case AgeCategory.Infant:
@@ -144,7 +132,7 @@ namespace InternConsoleApp
                         break;
                     }
                     //otherwise continue to next loop iteration
-                }
+            }
 
             //after loop ends, either all categories assigned or exit requested
             if (exitRequested)
@@ -166,9 +154,54 @@ namespace InternConsoleApp
 
             return; // Added return statement to explicitly indicate the end of Main method
         }
-        //End of Main
+        //-------------------------------- END OF MAIN METHOD --------------------------------//
 
-        //Prompt Functions
+
+
+        //-------------------------------- HELPER FUNCTIONS ----------------------------------//
+
+        // ENUM FOR AGE CATEGORIES
+        enum AgeCategory
+        {
+            Infant, //0-2
+            Child, //3-12  
+            Teenager,//13-17
+            YoungAdult,//18-24
+            Adult,//25-64
+            Senior//65+
+        }
+
+        // ASSIGNMENT RESULT FUNCTION
+        private enum AssignResult { Assigned, Decline, Exit}
+
+        private static AssignResult TryAssignPerson(string name, int birthYear, Dictionary<AgeCategory,string> assigned)
+        {
+            int age = CalculateAge(birthYear);
+            AgeCategory category = GetCategory(age);
+
+            if (!string.IsNullOrWhiteSpace(assigned[category]))
+            {
+                Console.WriteLine($"The category '{category}' is already assigned to '{assigned[category]}'. Would you like to overwrite it? [y/n]");
+                string answer = (Console.ReadLine() ?? "").Trim();
+                if (!string.Equals(answer, "y", StringComparison.OrdinalIgnoreCase))
+                {
+                    // User declined overwrite
+                    Console.WriteLine("Not Overwriting. Returning to menu...");
+
+                    //show prompt menu
+                    int fallback = PromptMenuChoice(assigned);
+                    if (fallback == 3) return AssignResult.Exit; //user chose to exit from menu
+                    return AssignResult.Decline; //user declined overwrite
+                }
+            }
+
+            assigned[category] = name;
+            // let caller print messages based on category
+            return AssignResult.Assigned;
+        }
+
+
+
 
         // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
         private static int PromptMenuChoice(Dictionary<AgeCategory,string> assigned)
@@ -221,6 +254,14 @@ namespace InternConsoleApp
             }
         }
 
+        //CALCULATE AGE FUNCTION -- Function to calculate age from birth year
+        private static int CalculateAge(int birthYear)
+        {
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+            int age = currentDate.Year - birthYear;
+            return age;
+        }
+
         //BIRTH YEAR FUNCTION -- Function to prompt for birth year input
         private static int PromptBirthYear()
         {
@@ -252,14 +293,7 @@ namespace InternConsoleApp
                 continue;
             }
 
-            //This is of course assuming the user's birthday is jan 1st, since we only ask for year.
-            currentDate = DateOnly.FromDateTime(DateTime.Now);
-            int age = currentDate.Year - BirthYear;
-            if (age < 0)
-            {
-                Console.WriteLine("Invalid age. Please Reenter Birth Year");
-                continue;
-            }
+            //This is of course assuming the user's birthday is jan 1st, since we only ask for year
             return BirthYear;
         }
 
