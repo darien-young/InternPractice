@@ -30,7 +30,8 @@
                 But that’s more of a style preference than a requirement. Overall, this looks solid and meets the requirements well!
             */
 
-using System;   
+using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -120,6 +121,10 @@ namespace InternConsoleApp
             {
                 Console.WriteLine("\nExiting early. Current Snapshot: ");
                 PrintSnapshot(assigned);
+
+                // write final snapshot to text file on early exit
+                PrintSnapshotToFile(assigned, "CategorySnapshot.txt");
+
                 Console.WriteLine();
                 Console.WriteLine("Press any key to exit.");
                 Console.ReadKey();
@@ -129,6 +134,10 @@ namespace InternConsoleApp
             //After all categories are assigned
             Console.WriteLine("\nAll age categories filled. Final Snapshot: \n");
             PrintSnapshot(assigned);
+
+            //write final snapshot to text file
+            PrintSnapshotToFile(assigned, "CategorySnapshot.txt");
+
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
@@ -360,6 +369,31 @@ namespace InternConsoleApp
             {
                 string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
                 Console.WriteLine($"{(int)kv.Key}: {kv.Key} => {assignedName}");
+            }
+        }
+
+        //PRINT TO TEXTFILE FUNCTION -- Function to print snapshot to text file
+        private static void PrintSnapshotToFile(Dictionary<AgeCategory,List<string>> assigned, string fileName)
+        {
+            try
+            {
+                // Get desktop path
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string fullPath = Path.Combine(desktop, fileName);
+
+                var lines = new List<string>();
+                lines.Add($"-- Category Snapshot ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) --");
+                foreach (var kv in assigned)
+                {
+                    string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
+                    lines.Add($"{(int)kv.Key}: {kv.Key} => {assignedName}");
+                }
+                File.WriteAllLines(fullPath, lines);
+                Console.WriteLine($"Snapshot written to {Path.GetFullPath(fullPath)}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error writing snapshot to file: {ex.Message}");
             }
         }
 
