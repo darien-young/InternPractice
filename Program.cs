@@ -382,14 +382,23 @@ namespace InternConsoleApp
                 string fullPath = Path.Combine(desktop, fileName);
 
                 var lines = new List<string>();
+
+                // add separator when file already exists
+                if (File.Exists(fullPath))
+                {
+                    lines.Add(string.Empty);
+                    lines.Add("\n------------------------------\n");
+                }
+
                 lines.Add($"-- Category Snapshot ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) --");
                 foreach (var kv in assigned)
                 {
                     string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
                     lines.Add($"{(int)kv.Key}: {kv.Key} => {assignedName}");
                 }
-                File.WriteAllLines(fullPath, lines);
-                Console.WriteLine($"Snapshot written to {Path.GetFullPath(fullPath)}");
+                //now appends instead of ovewriting
+                File.AppendAllLines(fullPath, lines);
+                Console.WriteLine($"Snapshot appended to {Path.GetFullPath(fullPath)}");
             }
             catch (Exception ex)
             {
