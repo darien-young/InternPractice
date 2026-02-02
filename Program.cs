@@ -22,7 +22,7 @@
 
             (New) Comments, Functions:
              - Let's try cleaning up main and implementing the switch messages from the assigning function. [MAX: Done.]
-             - Once you're satisfied with the logic flow and code structure, try expanding the array to holding multiple names per category.
+             - Once your satisfied with the logic flow and code structure, try expanding the array to holding multiple names per category.
             */
 
 using System;   
