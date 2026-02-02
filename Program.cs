@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
@@ -93,9 +94,8 @@ namespace InternConsoleApp
                     continue;
                 } //returns to menu
 
-                // Assigned -> print category-dependent message
-                int age = CalculateAge(birthYear);
-                AgeCategory category = GetCategory(age);
+
+                
 
                
                     //if all categories assigned after this, break to avoid extra prompt
@@ -167,36 +167,14 @@ namespace InternConsoleApp
 
             if (list.Count > 0)
             {
-                Console.WriteLine($"The category {category} already has {list.Count} entr{(list.Count == 1 ? "y" : "ies")}: {string.Join(",", list)}");
-                Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel to main menu");
-                string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
-
-                if (choice == "c" || choice == "cancel")
+                //delegate overwrite processing to separate function
+                var overwriteResult = ProcessExistingCategory(name, category, list, assigned);
+                if (overwriteResult != AssignResult.Assigned)
                 {
-                    Console.WriteLine("Canceled. Returning to menu...");
-                    // fallback to menu
-                    int fallback = PromptMenuChoice(assigned);
-                    if (fallback == 3) return AssignResult.Exit;
-                    return AssignResult.Decline;
+                    //either Decline (go back to menu) or Exit (user chose exit)
+                    return overwriteResult;
                 }
-
-                if (choice == "r" || choice == "replace")
-                {
-                    list.Clear();
-                    list.Add(name);
-                }
-                else if (choice == "a" || choice == "add")
-                {
-                    list.Add(name);
-                }
-                else
-                {
-                    Console.WriteLine("Invalid Choice. Returning to menu...");
-                    // fallback to menu
-                    int fallback = PromptMenuChoice(assigned);
-                    if (fallback == 3) return AssignResult.Exit;
-                    return AssignResult.Decline;
-                }
+            
             }
             else
             {
@@ -204,8 +182,56 @@ namespace InternConsoleApp
                 list.Add(name);
             }
 
-            //Boolean for AgeCategory-dependent Message
+            //Age Category Message now sepparated into separate function
             Console.WriteLine();
+            PrintCategoryMessage(category, name);
+
+
+            // let caller print messages based on category
+            return AssignResult.Assigned;
+        }
+
+
+        //EXISTING CATEGORY PROCESSING FUNCTION - handles add/replace/cancel logic
+        private static AssignResult ProcessExistingCategory(string name, AgeCategory category, List<string> list, Dictionary<AgeCategory, List<string>> assigned)
+        { 
+            Console.WriteLine($"The category {category} already has {list.Count} entr{(list.Count == 1 ? "y" : "ies")}: {string.Join(",", list)}");
+            Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel to main menu");
+            string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
+            
+            if (choice == "c" || choice == "cancel")
+            {
+                Console.WriteLine("Canceled. Returning to menu...");
+                // fallback to menu
+                int fallback = PromptMenuChoice(assigned);
+                if (fallback == 3) return AssignResult.Exit;
+                return AssignResult.Decline;
+            }
+            
+            if (choice == "r" || choice == "replace")
+            {
+                list.Clear();
+                list.Add(name);
+                return AssignResult.Assigned;
+            }
+            else if (choice == "a" || choice == "add")
+            {
+                list.Add(name);
+                return AssignResult.Assigned;
+            }
+            else
+            {
+                Console.WriteLine("Invalid Choice. Returning to menu...");
+                    // fallback to menu
+                    int fallback = PromptMenuChoice(assigned);
+                    if (fallback == 3) return AssignResult.Exit;
+                    return AssignResult.Decline;
+        }
+    }
+
+        //CATEGORY MESSAGE FUNCTION - Specified category message is now its own function for clarity
+        private static void PrintCategoryMessage(AgeCategory category, string name)
+        {
             switch (category)
             {
                 case AgeCategory.Infant:
@@ -227,12 +253,7 @@ namespace InternConsoleApp
                     Console.WriteLine($"Good day, {name},\nlet's go write our will!");
                     break;
             }
-
-           // let caller print messages based on category
-            return AssignResult.Assigned;
         }
-
-
 
 
         // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
