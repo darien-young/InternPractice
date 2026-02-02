@@ -1,4 +1,4 @@
-﻿/* Phase 3.2 - Cleaner Logic Flow 
+﻿/* Phase 3.3 - Cleaner Logic Flow 
              Separate Concerns into 3 functions:
 
             PromptName()
@@ -21,8 +21,13 @@
 
 
             (New) Comments, Functions:
-             - Let's try cleaning up main and implementing the switch messages from the assigning function. [MAX: Done.]
-             - Once your satisfied with the logic flow and code structure, try expanding the array to holding multiple names per category.
+             - Nice upgrade using Dictionary<AgeCategory, List<string>> and add/replace/cancel — good thinking.
+             - From what I could see, 'int age = CalculateAge(birthYear); AgeCategory category = GetCategory(age);'
+                but then you don’t print the category message there anymore (it moved into TryAssignPerson). Those lines are now dead code and can be removed.
+
+             - My only other concern is the TryAssignPerson function is getting a bit long. 
+                You might consider breaking out the overwrite prompt or the printed messages logic into its own function for clarity. 
+                But that’s more of a style preference than a requirement. Overall, this looks solid and meets the requirements well!
             */
 
 using System;   
