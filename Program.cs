@@ -26,13 +26,14 @@ namespace InternConsoleApp
         //log file name used on Desktop
         private const string LogFileName = "CategorySnapshot.txt";
         private const string SnapshotFileName = "CategorySnapshot.txt";
+        private const bool EchoLogsToConsole = false;
 
 
         //------------------------------- MAIN METHOD -------------------------------------//
         static void Main(string[] args)
         {
            
-                                // adding parse function to connect array to already existing enum.
+                               // adding parse function to connect array to already existing enum.
            var categories = Enum.GetNames(typeof(AgeCategory))
                                  .Select(n => Enum.Parse<AgeCategory>(n))
                                  .ToArray();
@@ -163,6 +164,8 @@ namespace InternConsoleApp
 
             if (list.Count > 0)
             {
+                //Logging when existing category is detected
+                AppendLog($"User attempted to add '{name}' (Aged {age}) to '{PrettyCategoryName(category)}' — existing entries detected; prompting add/replace/cancel.");
                 //delegate overwrite processing to separate function
                 var overwriteResult = ProcessExistingCategory(name, category, list, assigned, age);
                 if (overwriteResult != AssignResult.Assigned)
@@ -209,14 +212,12 @@ namespace InternConsoleApp
             {
                 list.Clear();
                 list.Add(name);
-                return AssignResult.Assigned;
                 AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)} ' Category.");
-                return AssignResult.Decline;
+                return AssignResult.Assigned;
             }
             else if (choice == "a" || choice == "add")
             {
                 list.Add(name);
-                return AssignResult.Assigned;
                 AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)} ' Category.");
                 return AssignResult.Assigned;
             }
@@ -273,12 +274,12 @@ namespace InternConsoleApp
                 else if (postChoice == "2")
                 {
                     PrintSnapshot(assigned);
+                    //Log snapshot request
+                    AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
                     //loop back to menu after showing snapshot
                     continue;
 
-                    //Log snapshot request
-                    AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
-                }
+                                    }
                 else if (postChoice == "3")
                 {
                     return 3; //exit requested
@@ -390,9 +391,8 @@ namespace InternConsoleApp
                     string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
                     lines.Add($"{(int)kv.Key}: {kv.Key} => {assignedName}");
                 }
-                //now appends instead of ovewriting
+                //now appends instead of ovewriting; REMOVED console writing message.
                 File.AppendAllLines(fullPath, lines);
-                Console.WriteLine($"Snapshot appended to {Path.GetFullPath(fullPath)}");
             }
             catch (Exception ex)
             {
@@ -410,8 +410,6 @@ namespace InternConsoleApp
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:sstt");
                 string line = $"{timestamp} - {message}";
                 File.AppendAllLines(fullPath, new[] { line });
-                //small console echo for debugging
-                Console.WriteLine($"(Log) {line}");
             }
             catch
             {
@@ -426,7 +424,11 @@ namespace InternConsoleApp
             foreach (AgeCategory cat in Enum.GetValues(typeof(AgeCategory)))
             {
                 assigned.TryGetValue(cat, out var list);
-                if (list == null || list.Count ==0)
+                if (list == null || list.Count == 0)
+                {
+                    parts.Add($"{PrettyCategoryName(cat)} -> (empty)");
+                }
+                else
                 {
                     parts.Add($"{PrettyCategoryName(cat)} -> [{string.Join(",", list)}]");
                 }
