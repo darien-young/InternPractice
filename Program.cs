@@ -37,6 +37,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
+using System.Text;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
 
@@ -44,6 +45,10 @@ namespace InternConsoleApp
 {
     class Program
     {
+        //log file name used on Desktop
+        private const string LogFileName = "CategorySnapshot.txt";
+        private const string SnapshotFileName = "CategorySnapshot.txt";
+
 
         //------------------------------- MAIN METHOD -------------------------------------//
         static void Main(string[] args)
@@ -58,6 +63,10 @@ namespace InternConsoleApp
             // Thought it'd be best to make it clear for the end user.
             Console.WriteLine("Welcome to the Age Category Assigner!");
             Console.WriteLine("You will be prompted to enter people until every age category has a name assigned.");
+
+            //Log program start
+            AppendLog("\n\n User Started Program.");
+
             //Initial Menu Prompt
             int startMenuChoice = PromptMenuChoice(assigned);
             if (startMenuChoice == 3)
@@ -177,7 +186,7 @@ namespace InternConsoleApp
             if (list.Count > 0)
             {
                 //delegate overwrite processing to separate function
-                var overwriteResult = ProcessExistingCategory(name, category, list, assigned);
+                var overwriteResult = ProcessExistingCategory(name, category, list, assigned, age);
                 if (overwriteResult != AssignResult.Assigned)
                 {
                     //either Decline (go back to menu) or Exit (user chose exit)
@@ -189,6 +198,7 @@ namespace InternConsoleApp
             {
                 //no existing names, just add
                 list.Add(name);
+                AppendLog($"User added '{name}' (Age {age}) to '{PrettyCategoryName(category)}' Category.");
             }
 
             //Age Category Message now sepparated into separate function
@@ -202,7 +212,7 @@ namespace InternConsoleApp
 
 
         //EXISTING CATEGORY PROCESSING FUNCTION - handles add/replace/cancel logic
-        private static AssignResult ProcessExistingCategory(string name, AgeCategory category, List<string> list, Dictionary<AgeCategory, List<string>> assigned)
+        private static AssignResult ProcessExistingCategory(string name, AgeCategory category, List<string> list, Dictionary<AgeCategory, List<string>> assigned, int age)
         { 
             Console.WriteLine($"The category {category} already has {list.Count} entr{(list.Count == 1 ? "y" : "ies")}: {string.Join(",", list)}");
             Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel to main menu");
@@ -222,10 +232,14 @@ namespace InternConsoleApp
                 list.Clear();
                 list.Add(name);
                 return AssignResult.Assigned;
+                AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)} ' Category.");
+                return AssignResult.Decline;
             }
             else if (choice == "a" || choice == "add")
             {
                 list.Add(name);
+                return AssignResult.Assigned;
+                AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)} ' Category.");
                 return AssignResult.Assigned;
             }
             else
@@ -283,6 +297,9 @@ namespace InternConsoleApp
                     PrintSnapshot(assigned);
                     //loop back to menu after showing snapshot
                     continue;
+
+                    //Log snapshot request
+                    AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
                 }
                 else if (postChoice == "3")
                 {
@@ -293,7 +310,6 @@ namespace InternConsoleApp
                     Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
                 }
             }
-
         }
 
         //NAME FUNCTION -- Function to prompt for name inputs
@@ -405,6 +421,55 @@ namespace InternConsoleApp
                 Console.WriteLine($"Error writing snapshot to file: {ex.Message}");
             }
         }
+        
+        //APPENDLOG FUNCTION: a single log line (timestamped to the log file on the Desktop
+        private static void AppendLog(string message)
+        {
+            try
+            {
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string fullPath = Path.Combine(desktop, LogFileName);
+                string timestamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:sstt");
+                string line = $"{timestamp} - {message}";
+                File.AppendAllLines(fullPath, new[] { line });
+                //small console echo for debugging
+                Console.WriteLine($"(Log) {line}");
+            }
+            catch
+            {
+                //Don't throw from logger; if logging fails, keep runnign.
+            }    
+        }
+
+        //SNAPSHOT FOR LOG FUNCTION - compact snapshot string
+        private static string SnapshotForLog(Dictionary<AgeCategory, List<string>> assigned)
+        {
+            var parts = new List<string>();
+            foreach (AgeCategory cat in Enum.GetValues(typeof(AgeCategory)))
+            {
+                assigned.TryGetValue(cat, out var list);
+                if (list == null || list.Count ==0)
+                {
+                    parts.Add($"{PrettyCategoryName(cat)} -> [{string.Join(",", list)}]");
+                }
+            }
+            return string.Join(",", parts);
+        }
+
+        //ENUM NAME CONVERSION FUNCTION - converts names like "YoungAdult" to "Young Adult" 
+        private static string PrettyCategoryName(AgeCategory cat)
+        {
+            string s = cat.ToString();
+            var sb = new StringBuilder();
+            foreach (char ch in s)
+            {
+                if (char.IsUpper(ch) && sb.Length > 0) sb.Append(' ');
+                sb.Append(ch);
+            }
+            return sb.ToString();
+        }
+
+
 
         // Function to determine age category based on age
         private static AgeCategory GetCategory(int age)
