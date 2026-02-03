@@ -1,34 +1,12 @@
-﻿/* Phase 3.3 - Cleaner Logic Flow 
-             Separate Concerns into 3 functions:
-
-            PromptName()
-            PromptBirthYear()
-            PromptMenuChoice() - [return 1, 2, or 3]
-
-            Rules:
-                -PromptMenuChoice() only accepts specific integers.
-                -PromptName() accepts names.
-
-            Program Shows Menu:
-                -at the very start(optional)
-                - after each successful assignment(required)
-                - snapshot choice loops back to menu
-
-            Acceptance Criteria:
-                -The user is never asked to type “2” or “3” at the “Enter your name” prompt.
-                - If overwrite is declined, program returns to the menu(or restarts person input cleanly—your choice, just be consistent).
-                - Snapshot works from the menu reliably.
-
-
-            (New) Comments, Functions:
-             - Nice upgrade using Dictionary<AgeCategory, List<string>> and add/replace/cancel — good thinking.
-             - From what I could see, 'int age = CalculateAge(birthYear); AgeCategory category = GetCategory(age);'
-                but then you don’t print the category message there anymore (it moved into TryAssignPerson). Those lines are now dead code and can be removed.
-
-             - My only other concern is the TryAssignPerson function is getting a bit long. 
-                You might consider breaking out the overwrite prompt or the printed messages logic into its own function for clarity. 
-                But that’s more of a style preference than a requirement. Overall, this looks solid and meets the requirements well!
-            */
+﻿/* Phase 3.5 - Log Creation
+ * 
+ * Comments:
+     * The log method currently prints log lines to the console (debug echo). For the intended behavior, logs should write only to the log file.
+     * Remove the console write, or gate it behind a bool EchoLogsToConsole flag set to false.
+     * Some logs never run because they’re after return / continue (unreachable). Move AppendLog before returning/continuing.
+     * SnapshotForLog currently only includes empty categories and prints blank brackets. Update it to include all categories and show (empty) vs [names].
+     * Add a log line when an existing category is detected before prompting add/replace/cancel (“attempt prompted”).
+*/
 
 using System;
 using System.IO;
