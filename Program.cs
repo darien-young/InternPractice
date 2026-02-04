@@ -34,7 +34,7 @@ namespace InternConsoleApp
     class Program
     {
         //log file name used on Desktop
-        private const string LogFileName = "CategorySnapshot.txt";
+        private const string LogFileName = "ProgramLog.txt";
         private const string SnapshotFileName = "CategorySnapshot.txt";
         private const bool EchoLogsToConsole = false;
 
@@ -54,7 +54,7 @@ namespace InternConsoleApp
             Console.WriteLine("You will be prompted to enter people until every age category has a name assigned.");
 
             //Log program start
-            AppendLog("\n\n User Started Program.");
+            AppendLog("User Started Program.");
 
             //Initial Menu Prompt
             int startMenuChoice = PromptMenuChoice(assigned);
@@ -63,6 +63,11 @@ namespace InternConsoleApp
                 Console.WriteLine("\nExiting early. Current Snapshot: ");
                 PrintSnapshot(assigned);
                 Console.WriteLine();
+
+                //logging early exit
+                AppendLog("User Exited Program Early ");
+
+
                 Console.WriteLine("Press any key to exit.");
                 Console.ReadKey();
                 return;
@@ -117,11 +122,16 @@ namespace InternConsoleApp
             //after loop ends, either all categories assigned or exit requested
             if (exitRequested)
             {
+                
                 Console.WriteLine("\nExiting early. Current Snapshot: ");
                 PrintSnapshot(assigned);
 
                 // write final snapshot to text file on early exit
-                PrintSnapshotToFile(assigned, "CategorySnapshot.txt");
+                PrintSnapshotToFile(assigned, SnapshotFileName, isFinalSnapShot : true);
+
+                //logging earley exit
+                AppendLog("User Exited Program Early; Final Snapshot Printed. ");
+
 
                 Console.WriteLine();
                 Console.WriteLine("Press any key to exit.");
@@ -133,8 +143,10 @@ namespace InternConsoleApp
             Console.WriteLine("\nAll age categories filled. Final Snapshot: \n");
             PrintSnapshot(assigned);
 
+            AppendLog("User Filled All Age Categories. Final Snapshot Printed And Program Exited.");
+
             //write final snapshot to text file
-            PrintSnapshotToFile(assigned, "CategorySnapshot.txt");
+            PrintSnapshotToFile(assigned, SnapshotFileName, isFinalSnapShot : true);
 
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
@@ -175,7 +187,7 @@ namespace InternConsoleApp
             if (list.Count > 0)
             {
                 //Logging when existing category is detected
-                AppendLog($"User attempted to add '{name}' (Aged {age}) to '{PrettyCategoryName(category)}' — existing entries detected; prompting add/replace/cancel.");
+                AppendLog($"User attempted to add '{name}' (Age {age}) to '{PrettyCategoryName(category)}' — existing entries detected; prompting add/replace/cancel.");
                 //delegate overwrite processing to separate function
                 var overwriteResult = ProcessExistingCategory(name, category, list, assigned, age);
                 if (overwriteResult != AssignResult.Assigned)
@@ -215,6 +227,7 @@ namespace InternConsoleApp
                 // fallback to menu
                 int fallback = PromptMenuChoice(assigned);
                 if (fallback == 3) return AssignResult.Exit;
+                AppendLog($"User canceled assigning a new name to the '{PrettyCategoryName(category)}' Category.");
                 return AssignResult.Decline;
             }
             
@@ -222,13 +235,13 @@ namespace InternConsoleApp
             {
                 list.Clear();
                 list.Add(name);
-                AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)} ' Category.");
+                AppendLog($"User replaced all names in the {PrettyCategoryName(category)}' Category with '{name}' (Aged {age}) to '");
                 return AssignResult.Assigned;
             }
             else if (choice == "a" || choice == "add")
             {
                 list.Add(name);
-                AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)} ' Category.");
+                AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)}' Category.");
                 return AssignResult.Assigned;
             }
             else
@@ -284,8 +297,13 @@ namespace InternConsoleApp
                 else if (postChoice == "2")
                 {
                     PrintSnapshot(assigned);
+
                     //Log snapshot request
                     AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
+
+                    //Appending Snapshot to CategorySnapshot.txt
+                    PrintSnapshotToFile(assigned, "CategorySnapshot.txt");
+
                     //loop back to menu after showing snapshot
                     continue;
 
@@ -366,7 +384,7 @@ namespace InternConsoleApp
 
     }
 
-        // SNAPSHOT FUNCTION to print current snapshot of assigned categories
+        // SNAPSHOT FUNCTION to print current snapshot of assigned categories in Console
         private static void PrintSnapshot(Dictionary<AgeCategory,List<string>> assigned)
         {
             Console.WriteLine("\n -- Category Snapshot --");
@@ -377,8 +395,8 @@ namespace InternConsoleApp
             }
         }
 
-        //PRINT TO TEXTFILE FUNCTION -- Function to print snapshot to text file
-        private static void PrintSnapshotToFile(Dictionary<AgeCategory,List<string>> assigned, string fileName)
+        //PRINT TO TEXTFILE FUNCTION -- Function to print snapshot to the CategorySnapshot text file           //added bool to change snapshot title
+        private static void PrintSnapshotToFile(Dictionary<AgeCategory,List<string>> assigned, string fileName, bool isFinalSnapShot = false)
         {
             try
             {
@@ -395,7 +413,9 @@ namespace InternConsoleApp
                     lines.Add("\n------------------------------\n");
                 }
 
-                lines.Add($"-- Category Snapshot ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) --");
+                //alters title depending on if program is closing
+                string title = isFinalSnapShot ? "Final Snapshot" : "Category Snapshot";
+                lines.Add($"-- {title} ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) --");
                 foreach (var kv in assigned)
                 {
                     string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
@@ -417,13 +437,13 @@ namespace InternConsoleApp
             {
                 string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
                 string fullPath = Path.Combine(desktop, LogFileName);
-                string timestamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:sstt");
+                string timestamp = DateTime.Now.ToString("\nyyyy-MM-dd hh:mm:sstt");
                 string line = $"{timestamp} - {message}";
                 File.AppendAllLines(fullPath, new[] { line });
             }
             catch
             {
-                //Don't throw from logger; if logging fails, keep runnign.
+                //Don't throw from logger; if logging fails, keep running.
             }    
         }
 
@@ -436,11 +456,11 @@ namespace InternConsoleApp
                 assigned.TryGetValue(cat, out var list);
                 if (list == null || list.Count == 0)
                 {
-                    parts.Add($"{PrettyCategoryName(cat)} -> (empty)");
+                    parts.Add($" {PrettyCategoryName(cat)} -> (empty)");
                 }
                 else
                 {
-                    parts.Add($"{PrettyCategoryName(cat)} -> [{string.Join(",", list)}]");
+                    parts.Add($" {PrettyCategoryName(cat)} -> [{string.Join(",", list)}]");
                 }
             }
             return string.Join(",", parts);
