@@ -1,11 +1,21 @@
 ﻿/* Phase 3.5 - Log Creation
  * 
  * Comments:
-     * The log method currently prints log lines to the console (debug echo). For the intended behavior, logs should write only to the log file.
-     * Remove the console write, or gate it behind a bool EchoLogsToConsole flag set to false.
-     * Some logs never run because they’re after return / continue (unreachable). Move AppendLog before returning/continuing.
-     * SnapshotForLog currently only includes empty categories and prints blank brackets. Update it to include all categories and show (empty) vs [names].
-     * Add a log line when an existing category is detected before prompting add/replace/cancel (“attempt prompted”).
+     *Good improvement: logs are now file-only, snapshot events log correctly, and the audit trail captures key actions (start/add/snapshot/attempted add). 
+     *Your log captures the prompt event, but it doesn’t capture the decision outcome. In this run, Fiona was cancelled — we need a log line for cancel (I haven't tested replace).
+     *
+     *Example:  2026-02-04 08:20:45AM - Snapshot Requested: Infant -> (empty),Child -> [Lianna],Teenager -> [Neji],Young Adult -> [Dar],Adult -> [Drew],Senior -> [George]
+                2026-02-04 08:20:55AM - User attempted to add 'Kyle' (Aged 15) to 'Teenager' — existing entries detected; prompting add/replace/cancel.
+                2026-02-04 08:20:59AM - User added 'Kyle' (Aged 15) to 'Teenager ' Category.
+                2026-02-04 08:21:19AM - User attempted to add 'Fiona' (Aged 26) to 'Adult' — existing entries detected; prompting add/replace/cancel.
+                2026-02-04 08:21:37AM - User added 'Sam' (Age 2) to 'Infant' Category.
+
+    *Next additions:
+    *Split output into two files: ProgramLog.txt for event logs and CategorySnapshots.txt for snapshot reports.
+    *Standardize log wording (use one “Age X” format, and always use 'PrettyCategoryName'; remove the extra space in 'Teenager ' Category).
+    *Add explicit log lines on exit and on completion, plus “Final Snapshot: …” so the audit trail is complete even without the snapshot report block.
+
+   
 */
 
 using System;
