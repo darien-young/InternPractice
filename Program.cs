@@ -1,23 +1,18 @@
 ﻿/* Phase 3.5 - Log Creation
  * 
  * Comments:
-    *Fix the Replace log string (currently has broken quotes / ends mid-sentence).
-    *Log Cancel immediately when the user cancels (before any menu fallback), and ideally don’t call PromptMenuChoice 
-    *from inside ProcessExistingCategory. Return Decline/Exit and let Main handle menus.
-    *Use SnapshotFileName constant instead of hardcoded "CategorySnapshot.txt".
-    *Clean up unused using statements.
+    *Fix the Replace log string (currently has broken quotes / ends mid-sentence).---[x]
+    *Log Cancel immediately when the user cancels (before any menu fallback), and ideally don’t call PromptMenuChoice ---[x]
+    *from inside ProcessExistingCategory. Return Decline/Exit and let Main handle menus. --[x]
+    *Use SnapshotFileName constant instead of hardcoded "CategorySnapshot.txt". ---[x]
+    *Clean up unused using statements. ---[x] 
 */
 
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Text;
-using System.Text.Json.Nodes;
-using System.Xml.Linq;
 
 namespace InternConsoleApp
 {
@@ -26,7 +21,6 @@ namespace InternConsoleApp
         //log file name used on Desktop
         private const string LogFileName = "ProgramLog.txt";
         private const string SnapshotFileName = "CategorySnapshot.txt";
-        private const bool EchoLogsToConsole = false;
 
 
         //------------------------------- MAIN METHOD -------------------------------------//
@@ -213,10 +207,7 @@ namespace InternConsoleApp
             
             if (choice == "c" || choice == "cancel")
             {
-                Console.WriteLine("Canceled. Returning to menu...");
-                // fallback to menu
-                int fallback = PromptMenuChoice(assigned);
-                if (fallback == 3) return AssignResult.Exit;
+                Console.WriteLine("Canceled name assignment...");
                 AppendLog($"User canceled assigning a new name to the '{PrettyCategoryName(category)}' Category.");
                 return AssignResult.Decline;
             }
@@ -225,21 +216,19 @@ namespace InternConsoleApp
             {
                 list.Clear();
                 list.Add(name);
-                AppendLog($"User replaced all names in the {PrettyCategoryName(category)}' Category with '{name}' (Aged {age}) to '");
+                AppendLog($"User replaced all names in the '{PrettyCategoryName(category)}' Category with '{name}' (Age {age}).");
                 return AssignResult.Assigned;
             }
             else if (choice == "a" || choice == "add")
             {
                 list.Add(name);
-                AppendLog($"User added '{name}' (Aged {age}) to '{PrettyCategoryName(category)}' Category.");
+                AppendLog($"User added '{name}' (Age {age}) to '{PrettyCategoryName(category)}' Category.");
                 return AssignResult.Assigned;
             }
             else
             {
                 Console.WriteLine("Invalid Choice. Returning to menu...");
-                    // fallback to menu
-                    int fallback = PromptMenuChoice(assigned);
-                    if (fallback == 3) return AssignResult.Exit;
+                    // return to menu
                     return AssignResult.Decline;
         }
     }
@@ -292,7 +281,7 @@ namespace InternConsoleApp
                     AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
 
                     //Appending Snapshot to CategorySnapshot.txt
-                    PrintSnapshotToFile(assigned, "CategorySnapshot.txt");
+                    PrintSnapshotToFile(assigned, SnapshotFileName);
 
                     //loop back to menu after showing snapshot
                     continue;
