@@ -1,6 +1,7 @@
 ﻿/* Phase 3.5 - Log Creation
  * 
  * Comments:
+    ---[x]---
     * In 'ProcessExistingCategory', I noticed a bug whereby 
     * an invalid choice currently returns Decline and enters a loop: 
     * if the person keeps placing an invalid request at the a/r/c prompt, it will keep asking for name and age. 
@@ -15,7 +16,7 @@
     *2026-02-05 09:23:36AM - User added 'Fiona' (Age 83) to 'Senior' Category.
     *2026-02-05 09:23:38AM - User Exited Program Early; Final Snapshot Printed. 
 
-
+    ---[x]---
     *Also, just for quality of code purposes, I noticed the var categories and var assigned in main. 
     *Consider or compare:
         var assigned = Enum.GetValues<AgeCategory>()
@@ -42,10 +43,10 @@ namespace InternConsoleApp
         {
            
                                // adding parse function to connect array to already existing enum.
-           var categories = Enum.GetNames(typeof(AgeCategory))
+           var assigned = Enum.GetNames(typeof(AgeCategory))
                                  .Select(n => Enum.Parse<AgeCategory>(n))
-                                 .ToArray();
-            var assigned = categories.ToDictionary(c => c, c => new List<string>());  
+                                 .ToArray()
+                                 .ToDictionary(c => c, c => new List<string>());  
 
             // Thought it'd be best to make it clear for the end user.
             Console.WriteLine("Welcome to the Age Category Assigner!");
@@ -169,6 +170,46 @@ namespace InternConsoleApp
             Senior//65+
         }
 
+        // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
+        private static int PromptMenuChoice(Dictionary<AgeCategory, List<string>> assigned)
+        {
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
+                string postChoice = (Console.ReadLine() ?? "").Trim();
+
+                if (postChoice == "1")
+                {
+                    return 1; //continue requested
+                }
+                else if (postChoice == "2")
+                {
+                    PrintSnapshot(assigned);
+
+                    //Log snapshot request
+                    AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
+
+                    //Appending Snapshot to CategorySnapshot.txt
+                    PrintSnapshotToFile(assigned, SnapshotFileName);
+
+                    //loop back to menu after showing snapshot
+                    continue;
+
+                }
+                else if (postChoice == "3")
+                {
+                    return 3; //exit requested
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
+                    AppendLog("User Entered Invalid Input At Prompt Menu");
+
+                }
+            }
+        }
+
         // ASSIGNMENT RESULT ENUM
         private enum AssignResult { Assigned, Decline, Exit}
 
@@ -185,7 +226,7 @@ namespace InternConsoleApp
             if (list.Count > 0)
             {
                 //Logging when existing category is detected
-                AppendLog($"User attempted to add '{name}' (Age {age}) to '{PrettyCategoryName(category)}' — existing entries detected; prompting add/replace/cancel.");
+                AppendLog($"User attempted To Add '{name}' (Age {age}) To '{PrettyCategoryName(category)}' — Existing Entries Detected; Prompting Add/Replace/Cancel.");
                 //delegate overwrite processing to separate function
                 var overwriteResult = ProcessExistingCategory(name, category, list, assigned, age);
                 if (overwriteResult != AssignResult.Assigned)
@@ -199,7 +240,7 @@ namespace InternConsoleApp
             {
                 //no existing names, just add
                 list.Add(name);
-                AppendLog($"User added '{name}' (Age {age}) to '{PrettyCategoryName(category)}' Category.");
+                AppendLog($"User Added '{name}' (Age {age}) To '{PrettyCategoryName(category)}' Category.");
             }
 
             //Age Category Message now sepparated into separate function
@@ -214,37 +255,43 @@ namespace InternConsoleApp
 
         //EXISTING CATEGORY PROCESSING FUNCTION - handles add/replace/cancel logic
         private static AssignResult ProcessExistingCategory(string name, AgeCategory category, List<string> list, Dictionary<AgeCategory, List<string>> assigned, int age)
-        { 
-            Console.WriteLine($"The category {category} already has {list.Count} entr{(list.Count == 1 ? "y" : "ies")}: {string.Join(",", list)}");
-            Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel to main menu");
-            string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
+        {
+            Console.WriteLine($"\nThe category {category} already has {list.Count} entr{(list.Count == 1 ? "y" : "ies")}: {string.Join(",", list)}");
+
+            while (true)
+            {
+                Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel and re-enter name");
+                string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
             
-            if (choice == "c" || choice == "cancel")
-            {
-                Console.WriteLine("Canceled name assignment...");
-                AppendLog($"User canceled assigning a new name to the '{PrettyCategoryName(category)}' Category.");
-                return AssignResult.Decline;
-            }
-            
-            if (choice == "r" || choice == "replace")
-            {
-                list.Clear();
-                list.Add(name);
-                AppendLog($"User replaced all names in the '{PrettyCategoryName(category)}' Category with '{name}' (Age {age}).");
-                return AssignResult.Assigned;
-            }
-            else if (choice == "a" || choice == "add")
-            {
-                list.Add(name);
-                AppendLog($"User added '{name}' (Age {age}) to '{PrettyCategoryName(category)}' Category.");
-                return AssignResult.Assigned;
-            }
-            else
-            {
-                Console.WriteLine("Invalid Choice. Returning to menu...");
-                    // return to menu
+                if (choice == "c" || choice == "cancel")
+                {
+                    Console.WriteLine("Canceled name assignment...");
+                    AppendLog($"User Canceled Assigning A New Name To The '{PrettyCategoryName(category)}' Category.");
                     return AssignResult.Decline;
-        }
+                }
+
+                if (choice == "r" || choice == "replace")
+                {
+                    list.Clear();
+                    list.Add(name);
+                    AppendLog($"User Replaced All Names In The '{PrettyCategoryName(category)}' Category With '{name}' (Age {age}).");
+                    return AssignResult.Assigned;
+                }
+                else if (choice == "a" || choice == "add")
+                {
+                    list.Add(name);
+                    AppendLog($"User Added '{name}' (Age {age}) To '{PrettyCategoryName(category)}' Category.");
+                    return AssignResult.Assigned;
+                }
+                else
+                {
+                    Console.WriteLine("\nInvalid Choice. Please enter a, r, or c.");
+                    //keeps user in a/r/c menu until valid input, just like the main menu.
+                    //Logs invalid input
+                    AppendLog("User Entered Invalid Input At Existing Assignment Menu.");
+
+                }
+            }
     }
 
         //CATEGORY MESSAGE FUNCTION - Specified category message is now its own function for clarity
@@ -274,43 +321,7 @@ namespace InternConsoleApp
         }
 
 
-        // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
-        private static int PromptMenuChoice(Dictionary<AgeCategory, List<string>> assigned)
-        {
-            while (true)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
-                string postChoice = (Console.ReadLine() ?? "").Trim();
-
-                if (postChoice == "1")
-                {
-                    return 1; //continue requested
-                }
-                else if (postChoice == "2")
-                {
-                    PrintSnapshot(assigned);
-
-                    //Log snapshot request
-                    AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
-
-                    //Appending Snapshot to CategorySnapshot.txt
-                    PrintSnapshotToFile(assigned, SnapshotFileName);
-
-                    //loop back to menu after showing snapshot
-                    continue;
-
-                                    }
-                else if (postChoice == "3")
-                {
-                    return 3; //exit requested
-                }
-                else
-                {
-                    Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
-                }
-            }
-        }
+        
 
         //NAME FUNCTION -- Function to prompt for name inputs
         private static string PromptName()
@@ -325,6 +336,7 @@ namespace InternConsoleApp
                 if (string.IsNullOrWhiteSpace(nameInput) || !nameInput.All(char.IsLetter))
                 {
                     Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
+                    AppendLog("User Entered Invalid Name Input.");
                     continue;
                 }
 
@@ -355,19 +367,22 @@ namespace InternConsoleApp
 
             if (!int.TryParse(BirthYearInput, out int BirthYear))
             {
-                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)");
+                Console.WriteLine("\nInvalid Input. Please use Numbers Only (No letters or symbols)\n");
+                AppendLog("User Entered Invalid Birth Year.");
                 continue;
             }
 
             if (BirthYear > currentYear)
             {
-               Console.WriteLine("Invalid Input. This year has not happened yet -_-");
-                continue;
+               Console.WriteLine("\nInvalid Input. This year has not happened yet -_-\n");
+               AppendLog("User Entered Invalid Birth Year.");
+               continue;
             }
 
             if (BirthYear < currentYear - 130)
             {
-                Console.WriteLine("Invalid Input. No one lives that long these days.");
+                Console.WriteLine("\nInvalid Input. No one lives that long these days.\n");
+                AppendLog("User Entered Invalid Birth Year.");
                 continue;
             }
 
