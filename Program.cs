@@ -1,106 +1,505 @@
-﻿using System;
-using System.ComponentModel.Design;
+﻿/* Phase 3.5 - Log Creation
+ * 
+ * Comments:
+    ---[x]---
+    * In 'ProcessExistingCategory', I noticed a bug whereby 
+    * an invalid choice currently returns Decline and enters a loop: 
+    * if the person keeps placing an invalid request at the a/r/c prompt, it will keep asking for name and age. 
+    * See example log entries below for 'Lopez', 'f' and 'd' attempts.
+    *
+    *2026-02-05 09:22:02AM - User Started Program.
+    *2026-02-05 09:22:08AM - User added 'Dar' (Age 24) to 'Young Adult' Category.
+    *2026-02-05 09:22:16AM - User added 'Gina' (Age 25) to 'Adult' Category.
+    *2026-02-05 09:22:25AM - User attempted to add 'Lopez' (Age 22) to 'Young Adult' — existing entries detected; prompting add/replace/cancel.
+    *2026-02-05 09:22:52AM - User attempted to add 'f' (Age 36) to 'Adult' — existing entries detected; prompting add/replace/cancel.
+    *2026-02-05 09:23:08AM - User attempted to add 'd' (Age 37) to 'Adult' — existing entries detected; prompting add/replace/cancel.
+    *2026-02-05 09:23:36AM - User added 'Fiona' (Age 83) to 'Senior' Category.
+    *2026-02-05 09:23:38AM - User Exited Program Early; Final Snapshot Printed. 
+
+    ---[x]---
+    *Also, just for quality of code purposes, I noticed the var categories and var assigned in main. 
+    *Consider or compare:
+        var assigned = Enum.GetValues<AgeCategory>()
+        .ToDictionary(c => c, _ => new List<string>());
+*/
+
+using System;
+using System.IO;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace InternConsoleApp
 {
     class Program
     {
+        //log file name used on Desktop
+        private const string LogFileName = "ProgramLog.txt";
+        private const string SnapshotFileName = "CategorySnapshot.txt";
+
+
+        //------------------------------- MAIN METHOD -------------------------------------//
         static void Main(string[] args)
         {
-            //This program already works. Your task is to change what happens after the input,
-            //and to ensure the correct datatypes are being used for the inputs.
-            string name = "";
-            while (true)
+           
+                               // adding parse function to connect array to already existing enum.
+           var assigned = Enum.GetNames(typeof(AgeCategory))
+                                 .Select(n => Enum.Parse<AgeCategory>(n))
+                                 .ToArray()
+                                 .ToDictionary(c => c, c => new List<string>());  
+
+            // Thought it'd be best to make it clear for the end user.
+            Console.WriteLine("Welcome to the Age Category Assigner!");
+            Console.WriteLine("You will be prompted to enter people until every age category has a name assigned.");
+
+            //Log program start
+            AppendLog("User Started Program.");
+
+            //Initial Menu Prompt
+            int startMenuChoice = PromptMenuChoice(assigned);
+            if (startMenuChoice == 3)
             {
-                // Ask for user's name
-                Console.Write("Enter your name: ");
-                name = Console.ReadLine();
+                Console.WriteLine("\nExiting early. Current Snapshot: ");
+                PrintSnapshot(assigned);
+                Console.WriteLine();
 
-                //Checking for only letter inputs
-                if (!string.IsNullOrWhiteSpace(name) && name.All(char.IsLetter))
-                {
-                    break;
-                }
+                //logging early exit
+                AppendLog("User Exited Program Early ");
 
-                Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
 
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+                return;
             }
 
-            //Setting age integer to then be updated by string parsing
-            int age = 0;
-            while (true)
-            {
-                // Ask for user's age
-                Console.Write("Enter your age: ");
-                string ageInput = Console.ReadLine();
+            bool exitRequested = false;
 
-                //checking for only numeric inputs
-                if (int.TryParse(ageInput, out age) && age >= 0)
-                {
-                    break;
+            //MAIN LOOP: continue until all categories are assigned or exit is requested
+            while (assigned.Any(kv => kv.Value.Count == 0) && !exitRequested)
+            {
+
+                //menuChoice == 1 - proceed to collect person data
+                string name = PromptName();
+                // get birth year (and validate it)
+                int birthYear = PromptBirthYear();
+
+                //Assignment Attempt
+                var result = TryAssignPerson(name, birthYear, assigned);
+                
+                if (result == AssignResult.Exit) 
+                {  
+                    exitRequested = true; 
+                    break; 
                 }
-                Console.WriteLine("Invalid Input. Please use Numbers Only (No letters or symbols)"); 
-            }                                   //Did you mean )" instead of ")? It cuts off the console command output prematurely.
-                                                // I meant )") actually. I needed a closing bracket both before ant after the close quote.
+                if (result == AssignResult.Decline) 
+                {
+                    
+                    continue;
+                } //returns to menu
 
-            //Boolean for Age-dependent Message
 
-            // Let's have more age ranges added:
-            // 1 - 3: "Hello, {name},\nlet's go to the nursery."
-            // 4 - 12: "Hello, {name},\nlet's go to primary school."
-            // 13 - 17: "Hello, {name},\nlet's go to high school."
-            // >75: "Hello, {name},\nlet's go to the nursery home."
-            //max: readded the age18-based conditions as extra lines of output to the applicable cases
-            // -- while adding new cases for those unapplicable ages.
-            // max: took the age18-based conditions out of the switch and made them their own switch statement.
-            //max: readded the age18-based conditions into the main switch statement to avoid multiple outputs.
-            Console.WriteLine();
-            switch (age)
-            {
-                case int n when (n >= 1 && n <= 3):
-                    Console.WriteLine($"Hello, {name},\nlet's go to the nursery.");
-                    break;
-                case int n when (n >= 4 && n <= 12):
-                    Console.WriteLine($"Hello, {name},\nlet's go to Primary School.");
-                    break;
-                case int n when (n >= 13 && n <= 17):
-                    Console.WriteLine($"Hello, {name},\nlet's go to High School.");
-                    break;
-                case int n when (n == 18):
-                    Console.WriteLine($"Hello, {name},\nlet's have fun this year.");
-                    break;
-                case int n when (n > 18 && n <= 75):
-                    Console.WriteLine($"Hello, {name},\nlet's go for a drink.");
-                    break;
-                case int n when (n > 75):
-                    Console.WriteLine($"Hello, {name},\nlet's go to the nursery home.");
-                    break;
+                
+
+               
+                    //if all categories assigned after this, break to avoid extra prompt
+                    if (!assigned.Any(kv => kv.Value.Count == 0))
+                    {
+                        //all categories assigned - break birthyear loop and let outer loop end
+                        break;
+                    }
+
+                    //SHOW MENU after each successful assignment
+                    int postMenuChoice = PromptMenuChoice(assigned);
+                    if (postMenuChoice == 3)
+                    {
+                        exitRequested = true;
+                        break;
+                    }
+                    //otherwise continue to next loop iteration
             }
 
-            //Readded the separate switch for age18-based conditions. For some reason I assumed it wouldn't be that simple.
+            //after loop ends, either all categories assigned or exit requested
+            if (exitRequested)
+            {
+                
+                Console.WriteLine("\nExiting early. Current Snapshot: ");
+                PrintSnapshot(assigned);
 
-            //Darien Comment:
-            //It's technically not necessary to have a separate switch statement here.
-            //The current logic works, but it generates two messages for ages that fall into the first four categories from the first switch.
-            //Try having it so that each age only generates one message total.
-            // Ok I had thought you wanted both messages. in that case i'll just add the >18 and ==18 into the next switch, and abandon the <18
-        
+                // write final snapshot to text file on early exit
+                PrintSnapshotToFile(assigned, SnapshotFileName, isFinalSnapShot : true);
 
-            //Console.WriteLine(); 
-            //Fixed
+                //logging earley exit
+                AppendLog("User Exited Program Early; Final Snapshot Printed. ");
+
+
+                Console.WriteLine();
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+                return;
+            }
+
+            //After all categories are assigned
+            Console.WriteLine("\nAll age categories filled. Final Snapshot: \n");
+            PrintSnapshot(assigned);
+
+            AppendLog("User Filled All Age Categories. Final Snapshot Printed And Program Exited.");
+
+            //write final snapshot to text file
+            PrintSnapshotToFile(assigned, SnapshotFileName, isFinalSnapShot : true);
 
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
             return; // Added return statement to explicitly indicate the end of Main method
-                    // still needs two keystrokes on this laptop to exit. 
+        }
+        //-------------------------------- END OF MAIN METHOD --------------------------------//
 
-            //Darien Comment: 
-            // This multiple keystroke issue is due to how the console handles input buffering.
-            // *Try commenting out the readkey and the writeline without any string values and see if it still happens.
-            // Once we're both satisfied with the code, we can consider this task complete and go into phase 2 of this program.
+
+
+        //-------------------------------- HELPER FUNCTIONS ----------------------------------//
+
+        // ENUM FOR AGE CATEGORIES
+        enum AgeCategory
+        {
+            Infant, //0-2
+            Child, //3-12  
+            Teenager,//13-17
+            YoungAdult,//18-24
+            Adult,//25-64
+            Senior//65+
+        }
+
+        // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
+        private static int PromptMenuChoice(Dictionary<AgeCategory, List<string>> assigned)
+        {
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
+                string postChoice = (Console.ReadLine() ?? "").Trim();
+
+                if (postChoice == "1")
+                {
+                    return 1; //continue requested
+                }
+                else if (postChoice == "2")
+                {
+                    PrintSnapshot(assigned);
+
+                    //Log snapshot request
+                    AppendLog($"Snapshot Requested: {SnapshotForLog(assigned)}");
+
+                    //Appending Snapshot to CategorySnapshot.txt
+                    PrintSnapshotToFile(assigned, SnapshotFileName);
+
+                    //loop back to menu after showing snapshot
+                    continue;
+
+                }
+                else if (postChoice == "3")
+                {
+                    return 3; //exit requested
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
+                    AppendLog("User Entered Invalid Input At Prompt Menu");
+
+                }
+            }
+        }
+
+        // ASSIGNMENT RESULT ENUM
+        private enum AssignResult { Assigned, Decline, Exit}
+
+        //ASSIGN PERSON FUNCTION -- Now handles multiple names per category
+        // and prints the category-dependent message
+        // If category already assigned, user can add, replace , or cancel
+        private static AssignResult TryAssignPerson(string name, int birthYear, Dictionary<AgeCategory, List<string>> assigned)
+        {
+            int age = CalculateAge(birthYear);
+            AgeCategory category = GetCategory(age);
+
+            var list = assigned[category];
+
+            if (list.Count > 0)
+            {
+                //Logging when existing category is detected
+                AppendLog($"User attempted To Add '{name}' (Age {age}) To '{PrettyCategoryName(category)}' — Existing Entries Detected; Prompting Add/Replace/Cancel.");
+                //delegate overwrite processing to separate function
+                var overwriteResult = ProcessExistingCategory(name, category, list, assigned, age);
+                if (overwriteResult != AssignResult.Assigned)
+                {
+                    //either Decline (go back to menu) or Exit (user chose exit)
+                    return overwriteResult;
+                }
+            
+            }
+            else
+            {
+                //no existing names, just add
+                list.Add(name);
+                AppendLog($"User Added '{name}' (Age {age}) To '{PrettyCategoryName(category)}' Category.");
+            }
+
+            //Age Category Message now sepparated into separate function
+            Console.WriteLine();
+            PrintCategoryMessage(category, name);
+
+
+            // let caller print messages based on category
+            return AssignResult.Assigned;
+        }
+
+
+        //EXISTING CATEGORY PROCESSING FUNCTION - handles add/replace/cancel logic
+        private static AssignResult ProcessExistingCategory(string name, AgeCategory category, List<string> list, Dictionary<AgeCategory, List<string>> assigned, int age)
+        {
+            Console.WriteLine($"\nThe category {category} already has {list.Count} entr{(list.Count == 1 ? "y" : "ies")}: {string.Join(",", list)}");
+
+            while (true)
+            {
+                Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel and re-enter name");
+                string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
+            
+                if (choice == "c" || choice == "cancel")
+                {
+                    Console.WriteLine("Canceled name assignment...");
+                    AppendLog($"User Canceled Assigning A New Name To The '{PrettyCategoryName(category)}' Category.");
+                    return AssignResult.Decline;
+                }
+
+                if (choice == "r" || choice == "replace")
+                {
+                    list.Clear();
+                    list.Add(name);
+                    AppendLog($"User Replaced All Names In The '{PrettyCategoryName(category)}' Category With '{name}' (Age {age}).");
+                    return AssignResult.Assigned;
+                }
+                else if (choice == "a" || choice == "add")
+                {
+                    list.Add(name);
+                    AppendLog($"User Added '{name}' (Age {age}) To '{PrettyCategoryName(category)}' Category.");
+                    return AssignResult.Assigned;
+                }
+                else
+                {
+                    Console.WriteLine("\nInvalid Choice. Please enter a, r, or c.");
+                    //keeps user in a/r/c menu until valid input, just like the main menu.
+                    //Logs invalid input
+                    AppendLog("User Entered Invalid Input At Existing Assignment Menu.");
+
+                }
+            }
+    }
+
+        //CATEGORY MESSAGE FUNCTION - Specified category message is now its own function for clarity
+        private static void PrintCategoryMessage(AgeCategory category, string name)
+        {
+            switch (category)
+            {
+                case AgeCategory.Infant:
+                    Console.WriteLine($"Googoo, {name},\ngoo ga goo goo googooga.");
+                    break;
+                case AgeCategory.Child:
+                    Console.WriteLine($"Hi, {name},\nlet's go play outside.");
+                    break;
+                case AgeCategory.Teenager:
+                    Console.WriteLine($"Yo, {name},\nlet's go to high school.");
+                    break;
+                case AgeCategory.YoungAdult:
+                    Console.WriteLine($"Hey, {name},\nlet's go out for a drink");
+                    break;
+                case AgeCategory.Adult:
+                    Console.WriteLine($"Hello, {name},\nlet's go do our taxes.");
+                    break;
+                case AgeCategory.Senior:
+                    Console.WriteLine($"Good day, {name},\nlet's go write our will!");
+                    break;
+            }
+        }
+
+
+        
+
+        //NAME FUNCTION -- Function to prompt for name inputs
+        private static string PromptName()
+        {
+            while (true)
+            {
+                // Ask for user's name
+                Console.Write("\nEnter your name: ");
+                string nameInput = (Console.ReadLine() ?? "").Trim();
+
+                //Checking for only letter inputs
+                if (string.IsNullOrWhiteSpace(nameInput) || !nameInput.All(char.IsLetter))
+                {
+                    Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
+                    AppendLog("User Entered Invalid Name Input.");
+                    continue;
+                }
+
+                return nameInput;
+            }
+        }
+
+        //CALCULATE AGE FUNCTION -- Function to calculate age from birth year
+        private static int CalculateAge(int birthYear)
+        {
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+            int age = currentDate.Year - birthYear;
+            return age;
+        }
+
+        //BIRTH YEAR FUNCTION -- Function to prompt for birth year input
+        private static int PromptBirthYear()
+        {
+        var currentYear = DateTime.Now.Year;
+        while (true)
+        {
+            // Ask for user's age
+            Console.Write("Enter your Birth Year: ");
+            String BirthYearInput = (Console.ReadLine() ?? string.Empty).Trim();
+
+            // Parse BirthYear string to int safely
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+            if (!int.TryParse(BirthYearInput, out int BirthYear))
+            {
+                Console.WriteLine("\nInvalid Input. Please use Numbers Only (No letters or symbols)\n");
+                AppendLog("User Entered Invalid Birth Year.");
+                continue;
+            }
+
+            if (BirthYear > currentYear)
+            {
+               Console.WriteLine("\nInvalid Input. This year has not happened yet -_-\n");
+               AppendLog("User Entered Invalid Birth Year.");
+               continue;
+            }
+
+            if (BirthYear < currentYear - 130)
+            {
+                Console.WriteLine("\nInvalid Input. No one lives that long these days.\n");
+                AppendLog("User Entered Invalid Birth Year.");
+                continue;
+            }
+
+            //This is of course assuming the user's birthday is jan 1st, since we only ask for year
+            return BirthYear;
+        }
+
+    }
+
+        // SNAPSHOT FUNCTION to print current snapshot of assigned categories in Console
+        private static void PrintSnapshot(Dictionary<AgeCategory,List<string>> assigned)
+        {
+            Console.WriteLine("\n -- Category Snapshot --");
+            foreach (var kv in assigned)
+            {
+                string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
+                Console.WriteLine($"{(int)kv.Key}: {kv.Key} => {assignedName}");
+            }
+        }
+
+        //PRINT TO TEXTFILE FUNCTION -- Function to print snapshot to the CategorySnapshot text file           //added bool to change snapshot title
+        private static void PrintSnapshotToFile(Dictionary<AgeCategory,List<string>> assigned, string fileName, bool isFinalSnapShot = false)
+        {
+            try
+            {
+                // Get desktop path
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string fullPath = Path.Combine(desktop, fileName);
+
+                var lines = new List<string>();
+
+                // add separator when file already exists
+                if (File.Exists(fullPath))
+                {
+                    lines.Add(string.Empty);
+                    lines.Add("\n------------------------------\n");
+                }
+
+                //alters title depending on if program is closing
+                string title = isFinalSnapShot ? "Final Snapshot" : "Category Snapshot";
+                lines.Add($"-- {title} ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) --");
+                foreach (var kv in assigned)
+                {
+                    string assignedName = kv.Value.Count == 0 ? "(empty)" : string.Join(",", kv.Value);
+                    lines.Add($"{(int)kv.Key}: {kv.Key} => {assignedName}");
+                }
+                //now appends instead of ovewriting; REMOVED console writing message.
+                File.AppendAllLines(fullPath, lines);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error writing snapshot to file: {ex.Message}");
+            }
+        }
+        
+        //APPENDLOG FUNCTION: a single log line (timestamped to the log file on the Desktop
+        private static void AppendLog(string message)
+        {
+            try
+            {
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string fullPath = Path.Combine(desktop, LogFileName);
+                string timestamp = DateTime.Now.ToString("\nyyyy-MM-dd hh:mm:sstt");
+                string line = $"{timestamp} - {message}";
+                File.AppendAllLines(fullPath, new[] { line });
+            }
+            catch
+            {
+                //Don't throw from logger; if logging fails, keep running.
+            }    
+        }
+
+        //SNAPSHOT FOR LOG FUNCTION - compact snapshot string
+        private static string SnapshotForLog(Dictionary<AgeCategory, List<string>> assigned)
+        {
+            var parts = new List<string>();
+            foreach (AgeCategory cat in Enum.GetValues(typeof(AgeCategory)))
+            {
+                assigned.TryGetValue(cat, out var list);
+                if (list == null || list.Count == 0)
+                {
+                    parts.Add($" {PrettyCategoryName(cat)} -> (empty)");
+                }
+                else
+                {
+                    parts.Add($" {PrettyCategoryName(cat)} -> [{string.Join(",", list)}]");
+                }
+            }
+            return string.Join(",", parts);
+        }
+
+        //ENUM NAME CONVERSION FUNCTION - converts names like "YoungAdult" to "Young Adult" 
+        private static string PrettyCategoryName(AgeCategory cat)
+        {
+            string s = cat.ToString();
+            var sb = new StringBuilder();
+            foreach (char ch in s)
+            {
+                if (char.IsUpper(ch) && sb.Length > 0) sb.Append(' ');
+                sb.Append(ch);
+            }
+            return sb.ToString();
+        }
+
+
+
+        // Function to determine age category based on age
+        private static AgeCategory GetCategory(int age)
+            {
+                if (age >= 0 && age <= 2) return AgeCategory.Infant;
+                if (age >= 3 && age <= 12) return AgeCategory.Child;
+                if (age >= 13 && age <= 17) return AgeCategory.Teenager;
+                if (age >= 18 && age <= 24) return AgeCategory.YoungAdult;
+                if (age >= 25 && age <= 64) return AgeCategory.Adult;
+                if (age >= 65) return AgeCategory.Senior;
+                return AgeCategory.Adult; // Default case, should not reach here
         }
     }
 }
+
