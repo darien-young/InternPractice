@@ -4,12 +4,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-/*  Phase 1: Read & Display File Contents
- * - Open text file, and print each line to the console.
- * - Count the total number of lines and display it at the end (this should exclude blank spaces and empty lines).
- * - Handle potential exceptions (e.g., file not found, access denied) gracefully, providing informative error messages to the user.
- * - Ensure that the file is properly closed after reading, even if an error occurs (consider using 'using' statements for resource management).
- * - This should be incorporated into the main program flow, allowing users the option to either read the programlog file, or proceed to add new entries without reading the file first.
+/*  Phase 2: Simple Parsing
+ *      Given a log line:
+ *          Example log lines:
+ *              2026-02-04 08:20:55AM - User attempted to add 'Kyle' (Age 15) to 'Teenager'
+ *              
+ *      * detect whether the line contains "attempted", "added", or "cancelled"
+ *      * extract the name(s) (if present) inside ''
+ *      * extract the category name
+ *      * extract the age (if present) inside ()
+ *      * For example, for the above log line, the output would be:
+ *      
+ *      | Timestamp | Action     | Name | Age | Category |
+ *      | --------- | ---------- | ---- | --- | -------- |
+ *      | 08:20:55  | AttemptAdd | Kyle | 15  | Teenager |
+ *      
+ *      Note, the user should have the option to see both parsed and unparsed log lines, and the program 
+ *      should handle cases where some information is missing (e.g., no age provided).
+ * 
  */
 
 namespace InternPractice
