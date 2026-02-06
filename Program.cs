@@ -9,6 +9,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using InternPractice; // Added to access ReadFiles class
 
 namespace InternConsoleApp
 {
@@ -38,7 +39,7 @@ namespace InternConsoleApp
 
             //Initial Menu Prompt
             int startMenuChoice = PromptMenuChoice(assigned);
-            if (startMenuChoice == 3)
+            if (startMenuChoice == 4)
             {
                 Console.WriteLine("\nExiting early. Current Snapshot: ");
                 PrintSnapshot(assigned);
@@ -91,7 +92,7 @@ namespace InternConsoleApp
 
                     //SHOW MENU after each successful assignment
                     int postMenuChoice = PromptMenuChoice(assigned);
-                    if (postMenuChoice == 3)
+                    if (postMenuChoice == 4)
                     {
                         exitRequested = true;
                         break;
@@ -151,13 +152,13 @@ namespace InternConsoleApp
             Senior//65+
         }
 
-        // MENU FUNCTION -- Shows menu. if user selects 2, shows snapshot and re-prompts. returns 1 or 3.
+        // MENU FUNCTION -- Shows menu. if user selects 2, s    hows snapshot and re-prompts. returns 1 or 3.
         private static int PromptMenuChoice(Dictionary<AgeCategory, List<string>> assigned)
         {
             while (true)
             {
                 Console.WriteLine();
-                Console.WriteLine("Press 1 to Continue, 2 to View a Snapshot of the Category List, and 3 to Exit.");
+                Console.WriteLine("Press 1 To Continue;\nPress 2 To View A Snapshot Of The Category List;\nPress 3 To View The Program Log File.\nPress 4 To Exit The Program.");
                 string postChoice = (Console.ReadLine() ?? "").Trim();
 
                 if (postChoice == "1")
@@ -180,11 +181,25 @@ namespace InternConsoleApp
                 }
                 else if (postChoice == "3")
                 {
-                    return 3; //exit requested
+                    //Log file request
+                    AppendLog("User Viewed Program Log File.");
+                   
+                    //Show log file contents in console
+                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    string fullPath = Path.Combine(desktop, LogFileName);
+                    
+                    ReadFiles.ReadAndDisplayFile(fullPath);
+                    
+                    //loop back to menu after showing log file
+                    continue;
+                }
+                else if (postChoice == "4")
+                {
+                    return 4; //exit requested
                 }
                 else
                 {
-                    Console.WriteLine("Invalid Input. Please enter 1, 2, or 3.");
+                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, or 4.");
                     AppendLog("User Entered Invalid Input At Prompt Menu");
 
                 }
@@ -241,7 +256,7 @@ namespace InternConsoleApp
 
             while (true)
             {
-                Console.WriteLine("Choose: (a)dd this name, (r)replace all names with this name, or (c)ancel and re-enter name");
+                Console.WriteLine("Choose: \n(a)dd this name, \n(r)replace all names with this name, or \n(c)ancel and re-enter name");
                 string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
             
                 if (choice == "c" || choice == "cancel")
