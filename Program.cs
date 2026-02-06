@@ -1,26 +1,7 @@
-﻿/* Phase 3.5 - Log Creation
- * 
- * Comments:
-    ---[x]---
-    * In 'ProcessExistingCategory', I noticed a bug whereby 
-    * an invalid choice currently returns Decline and enters a loop: 
-    * if the person keeps placing an invalid request at the a/r/c prompt, it will keep asking for name and age. 
-    * See example log entries below for 'Lopez', 'f' and 'd' attempts.
-    *
-    *2026-02-05 09:22:02AM - User Started Program.
-    *2026-02-05 09:22:08AM - User added 'Dar' (Age 24) to 'Young Adult' Category.
-    *2026-02-05 09:22:16AM - User added 'Gina' (Age 25) to 'Adult' Category.
-    *2026-02-05 09:22:25AM - User attempted to add 'Lopez' (Age 22) to 'Young Adult' — existing entries detected; prompting add/replace/cancel.
-    *2026-02-05 09:22:52AM - User attempted to add 'f' (Age 36) to 'Adult' — existing entries detected; prompting add/replace/cancel.
-    *2026-02-05 09:23:08AM - User attempted to add 'd' (Age 37) to 'Adult' — existing entries detected; prompting add/replace/cancel.
-    *2026-02-05 09:23:36AM - User added 'Fiona' (Age 83) to 'Senior' Category.
-    *2026-02-05 09:23:38AM - User Exited Program Early; Final Snapshot Printed. 
-
-    ---[x]---
-    *Also, just for quality of code purposes, I noticed the var categories and var assigned in main. 
-    *Consider or compare:
-        var assigned = Enum.GetValues<AgeCategory>()
-        .ToDictionary(c => c, _ => new List<string>());
+﻿/* Phase 4 : Revision and Enhancement
+ *  In order to incorporate reading and displaying of the log file, changes will need to be made to the current program flow. 
+ *  The user will be given the option to read the log file at the initial menu prompt, and if they choose to do so, the program will read and display the contents of the log file before returning to the main menu.
+ *  This will allow users to review their previous actions and the program's responses before continuing with new entries. Additionally, the program will continue to log all user interactions and snapshots as it currently does, ensuring that the log file remains up-to-date with all relevant information.
 */
 
 using System;
