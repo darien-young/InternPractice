@@ -39,7 +39,7 @@ namespace InternConsoleApp
 
             //Initial Menu Prompt
             int startMenuChoice = PromptMenuChoice(assigned);
-            if (startMenuChoice == 4)
+            if (startMenuChoice == 5)
             {
                 Console.WriteLine("\nExiting early. Current Snapshot: ");
                 PrintSnapshot(assigned);
@@ -92,7 +92,7 @@ namespace InternConsoleApp
 
                     //SHOW MENU after each successful assignment
                     int postMenuChoice = PromptMenuChoice(assigned);
-                    if (postMenuChoice == 4)
+                    if (postMenuChoice == 5)
                     {
                         exitRequested = true;
                         break;
@@ -158,7 +158,11 @@ namespace InternConsoleApp
             while (true)
             {
                 Console.WriteLine();
-                Console.WriteLine("Press 1 To Continue;\nPress 2 To View A Snapshot Of The Category List;\nPress 3 To View The Program Log File.\nPress 4 To Exit The Program.");
+                Console.WriteLine("Press 1 To Continue.");
+                Console.WriteLine("Press 2 To View A Snapshot Of The Category List.");
+                Console.WriteLine("Press 3 To View The Program Log File (Raw).");
+                Console.WriteLine("Press 4 To View The Program Log File (Parsed).");
+                Console.WriteLine("Press 5 To Exit The Program.");
                 string postChoice = (Console.ReadLine() ?? "").Trim();
 
                 if (postChoice == "1")
@@ -195,11 +199,18 @@ namespace InternConsoleApp
                 }
                 else if (postChoice == "4")
                 {
-                    return 4; //exit requested
+                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    string fullPath = Path.Combine(desktop, LogFileName);
+                    ReadFiles.DisplayParsedLogs(fullPath);
+                    continue;
+                }
+                else if (postChoice == "5")
+                {
+                    return 5; //exit requested
                 }
                 else
                 {
-                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, or 4.");
+                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, 4, or 5.");
                     AppendLog("User Entered Invalid Input At Prompt Menu");
 
                 }
