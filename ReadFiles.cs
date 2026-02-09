@@ -121,12 +121,12 @@ namespace InternPractice
         {
             var logs = ParseLogFile(filePath);
 
-            Console.WriteLine("\n| Timestamp | Action     | Name    | Age | Category |");
-            Console.WriteLine("|----------|-----------|------|--------|----------|");
+            Console.WriteLine("\n| Timestamp | Action     | Name    | Age | Category    |");
+              Console.WriteLine("|------------|-----------|---------|-----|-------------|");
 
             foreach (var l in logs)
             {
-                Console.WriteLine($"| {l.TimeStamp,-9} | {l.Action,-10} | {l.Name,-7} | {l.Age,-3} | {l.Category,-8} |");
+                Console.WriteLine($"| {l.TimeStamp,-9} | {l.Action,-10} | {l.Name,-7} | {l.Age,-3} | {l.Category,-11} |");
             }
         }
 
