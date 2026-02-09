@@ -23,6 +23,13 @@ using System.Text.RegularExpressions;
  *      Note, the user should have the option to see both parsed and unparsed log lines, and the program 
  *      should handle cases where some information is missing (e.g., no age provided).
  * 
+ *      02/09/2026 : Let's implement the functionality for new log files to generate based on the date.
+ *      For example, the first time it runs on 2026-02-09, it should create a log file named inclusive of the current date `2026_02_09` and write all logs for that day to that file.
+ *      The following day, it should create a new log file named `2026_02_10` and write all logs for that day to that file, and so on.
+ *      
+ *      You may edit the overall current code structure to follow coding best practices (ease of reading, classes having their own segregated files, etc.,
+ *      and you may also add additional functionality if you think it would be useful (e.g., allowing the user to specify a date range for which to display logs, 
+ *      or allowing the user to filter logs by action type).
  */
 
 namespace InternPractice
