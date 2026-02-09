@@ -32,7 +32,7 @@ using System.Text.RegularExpressions;
  *      or allowing the user to filter logs by action type).
  */
 
-namespace InternPractice
+namespace InternConsoleApp
 {
     internal class ReadFiles
     {
