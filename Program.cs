@@ -37,7 +37,7 @@ namespace InternPractice
 
             //Initial Menu Prompt
             int startMenuChoice = UserInterface.PromptMenuChoice(assigned);
-            if (startMenuChoice == 5)
+            if (startMenuChoice == 6)
             {
                 Console.WriteLine("\nExiting early. Current Snapshot: ");
                 AssignmentService.PrintSnapshot(assigned);
@@ -90,7 +90,7 @@ namespace InternPractice
 
                     //SHOW MENU after each successful assignment
                     int postMenuChoice = UserInterface.PromptMenuChoice(assigned);
-                    if (postMenuChoice == 5)
+                    if (postMenuChoice == 6)
                     {
                         exitRequested = true;
                         break;
@@ -106,7 +106,7 @@ namespace InternPractice
                 AssignmentService.PrintSnapshot(assigned);
 
                 // write final snapshot to text file on early exit
-                FileService.PrintSnapshotToFile(assigned, FileService.SnapshotFileName, isFinalSnapShot: true);
+                FileService.PrintSnapshotToFile(assigned, isFinalSnapShot: true);
 
                 //logging earley exit
                 FileService.AppendLog("User Exited Program Early; Final Snapshot Printed. ");
@@ -125,7 +125,7 @@ namespace InternPractice
             FileService.AppendLog("User Filled All Age Categories. Final Snapshot Printed And Program Exited.");
 
             //write final snapshot to text file
-            FileService.PrintSnapshotToFile(assigned, FileService.SnapshotFileName, isFinalSnapShot: true);
+            FileService.PrintSnapshotToFile(assigned, isFinalSnapShot: true);
 
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");

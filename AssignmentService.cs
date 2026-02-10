@@ -56,13 +56,13 @@ namespace InternConsoleApp
 
             while (true)
             {
-                Console.WriteLine("Choose: \n(a)dd this name, \n(r)replace all names with this name, or \n(c)ancel and re-enter name");
+                Console.WriteLine("Choose: \n[A] Add This Name, \n[R] Replace All Names With This Name, or \n[C] Cancel And Re-enter Name");
                 string choice = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
 
                 if (choice == "c" || choice == "cancel")
                 {
                     Console.WriteLine("Canceled name assignment...");
-                    FileService.AppendLog($"User Canceled Assigning A New Name To The '{AgeCategoryHelper.PrettyCategoryName(category)}' Category.");
+                    FileService.AppendLog($"User Canceled Assigning '{name}' (Age {age}) To The '{AgeCategoryHelper.PrettyCategoryName(category)}' Category.");
                     return AssignResult.Decline;
                 }
 
@@ -70,7 +70,7 @@ namespace InternConsoleApp
                 {
                     list.Clear();
                     list.Add(name);
-                    FileService.AppendLog($"User Replaced All Names In The '{AgeCategoryHelper.PrettyCategoryName(category)}' Category With '{name}' (Age {age}).");
+                    FileService.AppendLog($"User Added '{name}' (Age {age}) To The '{AgeCategoryHelper.PrettyCategoryName(category)}' Category, Replacing All Other Names In The Category.");
                     return AssignResult.Assigned;
                 }
                 else if (choice == "a" || choice == "add")

@@ -21,7 +21,7 @@ namespace InternConsoleApp
                 Directory.CreateDirectory(logsFolder);
 
                 // Now creating new date-based filename
-                string date = DateTime.Now.ToString("yyy-MM-dd");
+                string date = DateTime.Now.ToString("yyyy-MM-dd");
                 string fileName = $"ProgramLog_{date}.txt";
                 string fullPath = Path.Combine(logsFolder, fileName);
 

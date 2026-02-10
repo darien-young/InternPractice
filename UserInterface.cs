@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
 
 namespace InternConsoleApp
 {
@@ -15,7 +18,8 @@ namespace InternConsoleApp
                 Console.WriteLine("Press 2 To View A Snapshot Of The Category List.");
                 Console.WriteLine("Press 3 To View The Program Log File (Raw).");
                 Console.WriteLine("Press 4 To View The Program Log File (Parsed).");
-                Console.WriteLine("Press 5 To Exit The Program.");
+                Console.WriteLine("Press 5 To View The Program Log File (Parsed Filtered By Action Type).");
+                Console.WriteLine("Press 6 To Exit The Program.");
                 string postChoice = (Console.ReadLine() ?? "").Trim();
 
                 if (postChoice == "1")
@@ -30,7 +34,7 @@ namespace InternConsoleApp
                     FileService.AppendLog($"Snapshot Requested: {AssignmentService.SnapshotForLog(assigned)}");
 
                     //Appending Snapshot to CategorySnapshot.txt
-                    FileService.PrintSnapshotToFile(assigned, FileService.SnapshotFileName);
+                    FileService.PrintSnapshotToFile(assigned);
 
                     //loop back to menu after showing snapshot
                     continue;
@@ -64,11 +68,23 @@ namespace InternConsoleApp
                 }
                 else if (postChoice == "5")
                 {
-                    return 5; //exit requested
+                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    string logsFolder = Path.Combine(desktop, "ProgramLogs");
+                    string date = DateTime.Now.ToString("yyyy-MM-dd");
+                    string fullPath = Path.Combine(logsFolder, $"ProgramLog_{date}.txt");
+
+                    ReadFiles.PromptAndDisplayLogFilter(fullPath);
+                    continue;
+                }
+
+                else if (postChoice == "6")
+                {
+                    
+                    return 6; //exit requested
                 }
                 else
                 {
-                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, 4, or 5.");
+                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, 4, or 6.");
                     FileService.AppendLog("User Entered Invalid Input At Prompt Menu");
 
                 }
