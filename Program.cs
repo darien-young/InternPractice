@@ -46,10 +46,13 @@ namespace InternPractice
             Console.WriteLine("Welcome to the Age Category Assigner!");
             Console.WriteLine("You will be prompted to enter people until every age category has a name assigned.");
 
-            //Log program start
+            // Log program start
             FileService.AppendLog("User Started Program.");
 
-            //Initial Menu Prompt
+            // Appending to event record CSV
+            FileService.AppendEventCsv(new EventRecord { Action = "Start" });
+
+            // Initial Menu Prompt
             int startMenuChoice = UserInterface.PromptMenuChoice(assigned);
             if (startMenuChoice == 6)
             {
@@ -59,6 +62,9 @@ namespace InternPractice
 
                 //logging early exit
                 FileService.AppendLog("User Exited Program Early ");
+                
+                // Appending to event record CSV
+                FileService.AppendEventCsv(new EventRecord {Action = "Exit"});
 
 
                 Console.WriteLine("Press any key to exit.");
@@ -124,6 +130,9 @@ namespace InternPractice
 
                 //logging earley exit
                 FileService.AppendLog("User Exited Program Early; Final Snapshot Printed. ");
+                
+                // Appending to event record CSV
+                FileService.AppendEventCsv(new EventRecord {Action = "Exit"});
 
 
                 Console.WriteLine();
@@ -137,6 +146,9 @@ namespace InternPractice
             AssignmentService.PrintSnapshot(assigned);
 
             FileService.AppendLog("User Filled All Age Categories. Final Snapshot Printed And Program Exited.");
+
+            // Appending to event record csv
+            FileService.AppendEventCsv(new EventRecord {Action = "Exit"});
 
             //write final snapshot to text file
             FileService.PrintSnapshotToFile(assigned, isFinalSnapShot: true);

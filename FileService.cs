@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Collections.Generic;
+
 
 namespace InternConsoleApp
 {
@@ -10,7 +13,7 @@ namespace InternConsoleApp
         public const string SnapshotFileName = "CategorySnapshot.txt";
 
 
-        //APPENDLOG FUNCTION: a single log line (timestamped to the log file on the Desktop
+        //APPEND TO LOG FUNCTION: a single log line (timestamped to the log file on the Logs Folder)
         public static void AppendLog(string message)
         {
             try
@@ -38,6 +41,54 @@ namespace InternConsoleApp
                 Console.WriteLine("Log Error: " + ex.Message);
             }
         }
+
+        //CSV EVENT FUNCTION: a single CSV row (timestamped to the daily CSV file in the logd Folder)
+        public static void AppendEventCsv(EventRecord record)
+        {
+            try
+            {
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
+                string logsFolder = Path.Combine(desktop, "ProgramLogs");
+                Directory.CreateDirectory(logsFolder);
+
+                // Now creating new date-based filename
+                string date = DateTime.Now.ToString("yyyy-MM-dd");
+                string fileName = $"ProgramEvents_{date}.csv";
+                string fullPath = Path.Combine(logsFolder, fileName);
+
+                bool fileExists = File.Exists(fullPath);
+
+                using (var writer = new StreamWriter(fullPath, append: true))
+                {
+                    // write header only if it's a new file
+                    if (!fileExists)
+                    {
+                        writer.WriteLine("TimeStamp,Action,Name,Age,Category");
+                    }
+
+                    writer.WriteLine(record.ToCsv());
+                }
+            }
+            catch (Exception ex)
+            {
+                //Don't throw from logger; if logging fails, keep running.
+                Console.WriteLine("CSV Log Error: " + ex.Message);
+            }
+        }
+
+        public static void LogEvent(string action, string name = "", string age = "", string category = "")
+        {
+            AppendEventCsv(new EventRecord
+            {
+                Action = action,
+                Name = name,
+                Age = age,
+                Category = category
+            });
+        }   
+
+
 
 
         //PRINT TO TEXTFILE FUNCTION -- Function to print snapshot to the CategorySnapshot text file           //added bool to change snapshot title

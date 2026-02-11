@@ -23,6 +23,12 @@ namespace InternConsoleApp
             {
                 //Logging when existing category is detected
                 FileService.AppendLog($"User attempted To Add '{name}' (Age {age}) To '{AgeCategoryHelper.PrettyCategoryName(category)}' — Existing Entries Detected; Prompting Add/Replace/Cancel.");
+
+                // Appending to event record CSV
+                FileService.LogEvent("AddAttempt", name, age.ToString(), AgeCategoryHelper.PrettyCategoryName(category));
+
+
+
                 //delegate overwrite processing to separate function
                 var overwriteResult = ProcessExistingCategory(name, category, list, assigned, age);
                 if (overwriteResult != AssignResult.Assigned)
@@ -37,6 +43,9 @@ namespace InternConsoleApp
                 //no existing names, just add
                 list.Add(name);
                 FileService.AppendLog($"User Added '{name}' (Age {age}) To '{AgeCategoryHelper.PrettyCategoryName(category)}' Category.");
+
+                // Appending to event record CSV
+                FileService.LogEvent("Added", name, age.ToString(), AgeCategoryHelper.PrettyCategoryName(category));
             }
 
             //Age Category Message now sepparated into separate function
@@ -63,6 +72,10 @@ namespace InternConsoleApp
                 {
                     Console.WriteLine("Canceled name assignment...");
                     FileService.AppendLog($"User Canceled Assigning '{name}' (Age {age}) To The '{AgeCategoryHelper.PrettyCategoryName(category)}' Category.");
+
+                    // Appending to event record CSV
+                    FileService.LogEvent("Canceled", name, age.ToString(), AgeCategoryHelper.PrettyCategoryName(category));
+
                     return AssignResult.Decline;
                 }
 
@@ -71,12 +84,20 @@ namespace InternConsoleApp
                     list.Clear();
                     list.Add(name);
                     FileService.AppendLog($"User Added '{name}' (Age {age}) To The '{AgeCategoryHelper.PrettyCategoryName(category)}' Category, Replacing All Other Names In The Category.");
+
+                    // Appending to event record CSV
+                    FileService.LogEvent("Replaced", name, age.ToString(), AgeCategoryHelper.PrettyCategoryName(category));
+
                     return AssignResult.Assigned;
                 }
                 else if (choice == "a" || choice == "add")
                 {
                     list.Add(name);
                     FileService.AppendLog($"User Added '{name}' (Age {age}) To '{AgeCategoryHelper.PrettyCategoryName(category)}' Category.");
+
+                    // Appending to event record CSV
+                    FileService.LogEvent("Add", name, age.ToString(), AgeCategoryHelper.PrettyCategoryName(category));
+
                     return AssignResult.Assigned;
                 }
                 else
@@ -85,7 +106,8 @@ namespace InternConsoleApp
                     //keeps user in a/r/c menu until valid input, just like the main menu.
                     //Logs invalid input
                     FileService.AppendLog("User Entered Invalid Input At Existing Assignment Menu.");
-
+                    // Appending to event record CSV
+                    FileService.LogEvent("Invalid", name, age.ToString(), AgeCategoryHelper.PrettyCategoryName(category));
                 }
             }
         }

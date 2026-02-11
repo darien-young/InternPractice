@@ -33,6 +33,9 @@ namespace InternConsoleApp
                     //Log snapshot request
                     FileService.AppendLog($"Snapshot Requested: {AssignmentService.SnapshotForLog(assigned)}");
 
+                    // Appending to event record CSV
+                    FileService.AppendEventCsv(new EventRecord { Action = "Snapshot" });
+
                     //Appending Snapshot to CategorySnapshot.txt
                     FileService.PrintSnapshotToFile(assigned);
 
@@ -44,6 +47,9 @@ namespace InternConsoleApp
                 {
                     //Log file request
                     FileService.AppendLog("User Viewed Program Log File.");
+
+                    // Appending to event record CSV
+                    FileService.AppendEventCsv(new EventRecord { Action = "ViewLog" });
 
                     //Show log file contents in console
                     string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
@@ -87,6 +93,8 @@ namespace InternConsoleApp
                     Console.WriteLine("Invalid Input. Please enter 1, 2, 3, 4, 5 or 6.");
                     FileService.AppendLog("User Entered Invalid Input At Prompt Menu");
 
+                    // Appending to event record CSV
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
                 }
             }
         }
@@ -106,6 +114,8 @@ namespace InternConsoleApp
                 {
                     Console.WriteLine("Invalid Input. Please use letters only (no numbers or symbols)");
                     FileService.AppendLog("User Entered Invalid Name Input.");
+                    // Appending to event record CSV
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
                     continue;
                 }
 
@@ -132,21 +142,24 @@ namespace InternConsoleApp
                 {
                     Console.WriteLine("\nInvalid Input. Please use Numbers Only (No letters or symbols)\n");
                     FileService.AppendLog("User Entered Invalid Birth Year.");
-                    continue;
+                    // Appending to event record CSV
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
                 }
 
                 if (BirthYear > currentYear)
                 {
                     Console.WriteLine("\nInvalid Input. This year has not happened yet -_-\n");
                     FileService.AppendLog("User Entered Invalid Birth Year.");
-                    continue;
+                    // Appending to event record CSV
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
                 }
 
                 if (BirthYear < currentYear - 130)
                 {
                     Console.WriteLine("\nInvalid Input. No one lives that long these days.\n");
                     FileService.AppendLog("User Entered Invalid Birth Year.");
-                    continue;
+                    // Appending to event record CSV
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
                 }
 
                 //This is of course assuming the user's birthday is jan 1st, since we only ask for year
