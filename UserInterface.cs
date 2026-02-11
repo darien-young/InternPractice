@@ -84,7 +84,7 @@ namespace InternConsoleApp
                 }
                 else
                 {
-                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, 4, or 6.");
+                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, 4, 5 or 6.");
                     FileService.AppendLog("User Entered Invalid Input At Prompt Menu");
 
                 }

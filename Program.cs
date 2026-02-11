@@ -1,7 +1,21 @@
-﻿/* Phase 4 : Revision and Enhancement
- *  In order to incorporate reading and displaying of the log file, changes will need to be made to the current program flow. 
- *  The user will be given the option to read the log file at the initial menu prompt, and if they choose to do so, the program will read and display the contents of the log file before returning to the main menu.
- *  This will allow users to review their previous actions and the program's responses before continuing with new entries. Additionally, the program will continue to log all user interactions and snapshots as it currently does, ensuring that the log file remains up-to-date with all relevant information.
+﻿/* Phase 5 : CSV Implementation
+ *  
+ *  Generate daily CSV files to the same ProgramLogs folder that acts like a structured version of the log.
+ *  ProgramEvents_YYYY-MM-DD.csv
+ *  Timestamp (ISO format is best: 2026-02-11 14:23:01)
+ *  Action (Added, AddAttempt, Replaced, Canceled, Snapshot, Exit, Start)
+ *  Name (blank if not applicable)
+ *  Age (blank if not applicable)
+ *  Category (blank if not applicable)
+ *  
+ *  
+ *  *** Right now you have `FileService.AppendLog(message)`. Add a second method alongside it: `FileService.AppendEventCsv(EventRecord record)`.
+ *  
+ *  TLDR; When something happens: write a human-readable log line and write a structured CSV row, keeping the same formats as in the text file, but csv friendly.
+ *  Note: You can create a class or struct to hold the data for each event, and then implement the AppendEventCsv method to write it to the appropriate CSV file.
+ *  Make sure to handle file creation and appending correctly, especially when a new day starts and a new CSV file needs to be created. 
+ *  Excel is pretty forgiving with CSV formatting, but be mindful of commas in names or other fields that could disrupt the structure. 
+ *  You might want to enclose fields in quotes if they contain commas.
 */
 
 using System;
