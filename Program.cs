@@ -35,9 +35,11 @@ namespace InternPractice
         //------------------------------- MAIN METHOD -------------------------------------//
         static void Main(string[] args)
         {
-           
-                               // adding parse function to connect array to already existing enum.
-           var assigned = Enum.GetNames(typeof(AgeCategoryHelper.AgeCategory))
+
+
+
+            // adding parse function to connect array to already existing enum.
+            var assigned = Enum.GetNames(typeof(AgeCategoryHelper.AgeCategory))
                                  .Select(n => Enum.Parse<AgeCategoryHelper.AgeCategory>(n))
                                  .ToArray()
                                  .ToDictionary(c => c, c => new List<string>());  

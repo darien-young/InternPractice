@@ -15,11 +15,12 @@ namespace InternConsoleApp
             {
                 Console.WriteLine();
                 Console.WriteLine("Press 1 To Continue.");
-                Console.WriteLine("Press 2 To View A Snapshot Of The Category List.");
-                Console.WriteLine("Press 3 To View The Program Log File (Raw).");
-                Console.WriteLine("Press 4 To View The Program Log File (Parsed).");
-                Console.WriteLine("Press 5 To View The Program Log File (Parsed Filtered By Action Type).");
-                Console.WriteLine("Press 6 To Exit The Program.");
+                Console.WriteLine("Press 2 To View Category Snapshot.");
+                Console.WriteLine("Press 3 To View RAW Program Logs.");
+                Console.WriteLine("Press 4 To View PARSED Program Logs.");
+                Console.WriteLine("Press 5 To View CSV Event Logs.");
+                Console.WriteLine("Press 6 To Exit.");
+
                 string postChoice = (Console.ReadLine() ?? "").Trim();
 
                 if (postChoice == "1")
@@ -43,43 +44,91 @@ namespace InternConsoleApp
                     continue;
 
                 }
-                else if (postChoice == "3")
+                else if (postChoice == "3") // RAW Program Logs
                 {
-                    //Log file request
-                    FileService.AppendLog("User Viewed Program Log File.");
+                    FileService.AppendLog("User Requested RAW Program Logs (Date Range + Action Filter).");
+                    FileService.AppendEventCsv(new EventRecord { Action = "ViewRawLog" });
 
-                    // Appending to event record CSV
-                    FileService.AppendEventCsv(new EventRecord { Action = "ViewLog" });
+                    var files = ReadFiles.PromptDateRangeAndGetFiles("ProgramLog", "txt");
 
-                    //Show log file contents in console
-                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                    string logsFolder = Path.Combine(desktop, "ProgramLogs");
-                    string date = DateTime.Now.ToString("yyyy-MM-dd");
-                    string fullPath = Path.Combine(logsFolder, $"ProgramLog_{date}.txt");
+                    if (files.Count == 0)
+                    {
+                        Console.WriteLine("No RAW log files found for the selected date range.");
+                        continue;
+                    }
 
-                    ReadFiles.ReadAndDisplayFile(fullPath);
+                    string actionFilter = ReadFiles.PromptAndGetActionFilter(includeAllOption: true);
 
-                    //loop back to menu after showing log file
+                    foreach (var file in files)
+                    {
+                        FileService.AppendLog($"User Viewed RAW Log File: {Path.GetFileName(file)}");
+                        FileService.AppendEventCsv(new EventRecord { Action = "ViewRawLogFile", Name = Path.GetFileName(file) });
+
+                        Console.WriteLine($"\n=== RAW LOG FILE: {Path.GetFileName(file)} ===");
+
+                        if (actionFilter == "ALL")
+                            ReadFiles.ReadAndDisplayFile(file);
+                        else
+                            ReadFiles.ReadAndDisplayFileByAction(file, actionFilter); // New helper for filtering RAW logs by action
+                    }
                     continue;
                 }
-                else if (postChoice == "4")
+                else if (postChoice == "4") // PARSED Program Logs
                 {
-                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                    string logsFolder = Path.Combine(desktop, "ProgramLogs");
-                    string date = DateTime.Now.ToString("yyyy-MM-dd");
-                    string fullPath = Path.Combine(logsFolder, $"ProgramLog_{date}.txt");
+                    FileService.AppendLog("User Requested PARSED Program Logs (Date Range + Action Filter).");
+                    FileService.AppendEventCsv(new EventRecord { Action = "ViewParsedLog" });
 
-                    ReadFiles.DisplayParsedLogs(fullPath);
+                    var files = ReadFiles.PromptDateRangeAndGetFiles("ProgramLog", "txt");
+
+                    if (files.Count == 0)
+                    {
+                        Console.WriteLine("No PARSED log files found for the selected date range.");
+                        continue;
+                    }
+
+                    string actionFilter = ReadFiles.PromptAndGetActionFilter(includeAllOption: true);
+
+                    foreach (var file in files)
+                    {
+                        FileService.AppendLog($"User Parsed Log File: {Path.GetFileName(file)}");
+                        FileService.AppendEventCsv(new EventRecord { Action = "ParseLogFile", Name = Path.GetFileName(file) });
+
+                        Console.WriteLine($"\n=== PARSED LOG FILE: {Path.GetFileName(file)} ===");
+
+                        if (actionFilter == "ALL")
+                            ReadFiles.DisplayParsedLogs(file);
+                        else
+                            ReadFiles.DisplayParsedLogsByAction(file, actionFilter);
+                    }
                     continue;
                 }
-                else if (postChoice == "5")
+                else if (postChoice == "5") // CSV Event Logs
                 {
-                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                    string logsFolder = Path.Combine(desktop, "ProgramLogs");
-                    string date = DateTime.Now.ToString("yyyy-MM-dd");
-                    string fullPath = Path.Combine(logsFolder, $"ProgramLog_{date}.txt");
+                    FileService.AppendLog("User Requested CSV Event Logs (Date Range + Action Filter).");
+                    FileService.AppendEventCsv(new EventRecord { Action = "ViewCSV" });
 
-                    ReadFiles.PromptAndDisplayLogFilter(fullPath);
+                    var files = ReadFiles.PromptDateRangeAndGetFiles("ProgramEvents", "csv");
+
+                    if (files.Count == 0)
+                    {
+                        Console.WriteLine("No CSV event files found for the selected date range.");
+                        continue;
+                    }
+
+                    string actionFilter = ReadFiles.PromptAndGetActionFilter(includeAllOption: true, isCsv: true);
+
+                    foreach (var file in files)
+                    {
+                        FileService.AppendLog($"User Parsed CSV File: {Path.GetFileName(file)}");
+                        FileService.AppendEventCsv(new EventRecord { Action = "ParseCSVFile", Name = Path.GetFileName(file) });
+
+                        Console.WriteLine($"\n=== CSV EVENT FILE: {Path.GetFileName(file)} ===");
+
+                        if (actionFilter == "ALL")
+                            ReadFiles.DisplayParsedCsv(file);
+                        else
+                            ReadFiles.DisplayCsvByAction(file, actionFilter);
+                    }
                     continue;
                 }
 
@@ -90,7 +139,7 @@ namespace InternConsoleApp
                 }
                 else
                 {
-                    Console.WriteLine("Invalid Input. Please enter 1, 2, 3, 4, 5 or 6.");
+                    Console.WriteLine("Invalid Input. Please enter  a number from 1 to 6.");
                     FileService.AppendLog("User Entered Invalid Input At Prompt Menu");
 
                     // Appending to event record CSV
@@ -144,6 +193,7 @@ namespace InternConsoleApp
                     FileService.AppendLog("User Entered Invalid Birth Year.");
                     // Appending to event record CSV
                     FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
+                    continue;
                 }
 
                 if (BirthYear > currentYear)
@@ -152,6 +202,7 @@ namespace InternConsoleApp
                     FileService.AppendLog("User Entered Invalid Birth Year.");
                     // Appending to event record CSV
                     FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
+                    continue;
                 }
 
                 if (BirthYear < currentYear - 130)
@@ -160,12 +211,85 @@ namespace InternConsoleApp
                     FileService.AppendLog("User Entered Invalid Birth Year.");
                     // Appending to event record CSV
                     FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
+                    continue;
                 }
 
                 //This is of course assuming the user's birthday is jan 1st, since we only ask for year
                 return BirthYear;
             }
 
+
         }
+
+        // DATE VALIDATION FUNCTION
+        public static DateTime PromptValidDate(string promptMessage)
+        {
+            while (true)
+            {
+                Console.Write(promptMessage);
+                string input = (Console.ReadLine() ?? "").Trim();
+
+                // Try to parse using exact format yyyy-MM-dd
+                if (!DateTime.TryParseExact(input, "yyyy-MM-dd",
+                                           System.Globalization.CultureInfo.InvariantCulture,
+                                           System.Globalization.DateTimeStyles.None,
+                                           out DateTime result))
+                {
+                    Console.WriteLine("Invalid date format. Please enter a date in the format YYYY-MM-DD (e.g., 2026-02-12).");
+                    FileService.AppendLog($"User Entered Invalid Date Format: '{input}'");
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
+                    continue; // retry
+                }
+
+                // Check for impossible future date
+                if (result > DateTime.Now)
+                {
+                    Console.WriteLine("Invalid date. You cannot specify a future date.");
+                    FileService.AppendLog($"User Entered Future Date: '{input}'");
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
+                    continue; // retry
+                }
+
+                // Check for impossible past date (before logging ever existed)
+                DateTime earliestLogDate = new DateTime(2026, 2, 4); // adjust to when your first logs exist
+                if (result < earliestLogDate)
+                {
+                    Console.WriteLine($"Invalid date. Logs only exist starting {earliestLogDate:yyyy-MM-dd}.");
+                    FileService.AppendLog($"User Entered Too Early Date: '{input}'");
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
+                    continue; // retry
+                }
+
+                // Valid date
+                return result;
+            }
+        }
+
+        // DATE-RANGE VALIDTION FUNCTION
+        public static (DateTime startDate, DateTime endDate) PromptValidDateRange()
+        {
+            while (true)
+            {
+                Console.WriteLine("\nSpecify the date range for the logs:");
+
+                DateTime startDate = PromptValidDate("Start Date (YYYY-MM-DD): ");
+                DateTime endDate = PromptValidDate("End Date (YYYY-MM-DD): ");
+
+                // Ensure start <= end
+                if (startDate > endDate)
+                {
+                    Console.WriteLine("Invalid range. Start date cannot be after end date. Please try again.");
+                    FileService.AppendLog($"User Entered Invalid Date Range: {startDate:yyyy-MM-dd} to {endDate:yyyy-MM-dd}");
+                    FileService.AppendEventCsv(new EventRecord { Action = "Invalid" });
+                    continue; // retry
+                }
+
+                return (startDate, endDate);
+            }
+        }
+
+
+
+
     }
-}
+}   
