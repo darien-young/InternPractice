@@ -91,19 +91,37 @@ namespace InternConsoleApp
 
 
                 // Name extraction inside ''
-                var nameMatch = Regex.Match(line, @"'([^']+)'");
-                if (nameMatch.Success)
-                    entry.Name = nameMatch.Groups[1].Value;
+                // Extract all quoted values
+                var quotedMatches = Regex.Matches(line, @"'([^']+)'");
+
+                // Only process quotes if they exist
+                if (quotedMatches.Count > 0)
+                {
+                    // If this is an AddAttempt or Added action,
+                    // we expect: 'Name' and 'Category'
+                    if (entry.Action == "AddAttempt" || entry.Action == "Added" || entry.Action == "ReplacedBy")
+                    {
+                        if (quotedMatches.Count >= 1)
+                            entry.Name = quotedMatches[0].Groups[1].Value;
+
+                        if (quotedMatches.Count >= 2)
+                            entry.Category = quotedMatches[1].Groups[1].Value;
+                    }
+
+                    // If Snapshot, do NOT assign Name
+                    else if (entry.Action == "Snapshot")
+                    {
+                        entry.Name = "";
+                        entry.Category = "";
+                    }
+                }
+
 
                 // Age extraction inside (Age ##)
                 var ageMatch = Regex.Match(line, @"Age\s+(\d+)");
                 if (ageMatch.Success)
                     entry.Age = ageMatch.Groups[1].Value;
 
-                // Category extraction inside last ''
-                var catMatches = Regex.Matches(line, @"'([^']+)'");
-                if (catMatches.Count > 1)
-                    entry.Category = catMatches[catMatches.Count - 1].Groups[1].Value;
 
                 results.Add(entry);
             }
